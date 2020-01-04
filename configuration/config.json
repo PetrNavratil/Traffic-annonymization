@@ -1,0 +1,9 @@
+{
+  "verbose": true,
+  "network_access_layer": {
+    "class": "default_ether_modifier.DefaultEtherModifier"
+  },
+  "internet_layer": {
+    "class": "default_ip_modifier.DefaultIPModifier"
+  }
+}

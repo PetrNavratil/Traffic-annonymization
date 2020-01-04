@@ -1,0 +1,22 @@
+from scapy.all import RandMAC
+import scapy.layers.l2 as l2
+from logger.logger import Logger
+from interfaces.ether_modifier import EtherModifier
+
+
+class DefaultEtherModifier(EtherModifier):
+
+    def __init__(self, logger: Logger):
+        self.logger = logger
+
+    def modify_dst(self, dst: l2.DestMACField):
+        value = l2.Ether(src='ff:ff:ff:ff:ff:ff').src
+        self.logger.log('ETHER_dst', dst, value)
+        return value
+        # return RandMAC()
+
+    def modify_src(self, src: l2.SourceMACField):
+        value = l2.Ether(src='ff:ff:ff:ff:ff:ff').src
+        self.logger.log('ETHER_src', src, value)
+        return value
+        # return RandMAC()

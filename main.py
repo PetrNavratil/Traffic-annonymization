@@ -1,20 +1,32 @@
+# from typing import List
+
 import scapy.all as scapy
+
+# from helpers.modifier_controller import ModifierController
+# from interfaces.ether_modifier import EtherModifier
+# from interfaces.ip_modifier import IPModifier
 from logger.logger import Logger
 import helpers.helpers as helpers
-import argparse
+from parser.config_parser import ConfigParser
 
 
 if __name__ == '__main__':
-    # scapy.load_layer('http')
-    parser = argparse.ArgumentParser()
-    parser.parse_args()
 
-    pcap_reader = scapy.PcapReader('../dataset/single_pcaps/test.pcapng')
-    pcap_writer = scapy.PcapWriter('../dataset/altered/test.altered.pcapng')
-    #
+    parser = ConfigParser()
+    # pcap_reader = scapy.PcapReader('../dataset/single_pcaps/test.pcapng')
+    pcap_reader = scapy.PcapReader('../dataset/single_pcaps/http/http.pcap')
+    # pcap_writer = scapy.PcapWriter('../dataset/altered/test.altered.pcapng')
+    pcap_writer = scapy.PcapWriter('../dataset/altered/http.altered.pcap')
+
     logger = Logger()
-    modifier = helpers.load_ether_modifier('custom_ethsader_modifier.CustomEtherModifier', logger)
-    modifierIP = helpers.load_ip_modifier('default_ip_modifier.DefaultIPModifier', logger)
+    modifier = helpers.load_ether_modifier(parser.network_access_layer_class, logger)
+    modifierIP = helpers.load_ip_modifier(parser.internet_layer_class, logger)
+
+    # test: ModifierController[List[EtherModifier]] = ModifierController(parser.config)
+    # test2: ModifierController[List[IPModifier]] = ModifierController('TEST')
+    # test.print_politic()
+
+
     #
     #
     for i, packet in enumerate(pcap_reader):

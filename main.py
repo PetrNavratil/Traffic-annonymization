@@ -1,10 +1,10 @@
-# from typing import List
+from typing import List
 
 import scapy.all as scapy
 
-# from helpers.modifier_controller import ModifierController
-# from interfaces.ether_modifier import EtherModifier
-# from interfaces.ip_modifier import IPModifier
+from helpers.modifier_controller import ModifierController
+from interfaces.ether_modifier import EtherModifier
+from interfaces.ip_modifier import IPModifier
 from logger.logger import Logger
 import helpers.helpers as helpers
 from parser.config_parser import ConfigParser
@@ -22,15 +22,16 @@ if __name__ == '__main__':
     modifier = helpers.load_ether_modifier(parser.network_access_layer_class, logger)
     modifierIP = helpers.load_ip_modifier(parser.internet_layer_class, logger)
 
-    # test: ModifierController[List[EtherModifier]] = ModifierController(parser.config)
-    # test2: ModifierController[List[IPModifier]] = ModifierController('TEST')
-    # test.print_politic()
+    network_layer: ModifierController[EtherModifier] = ModifierController(parser.network_access_layer_config, logger)
+    internet_layer: ModifierController[IPModifier] = ModifierController(parser.internet_layer, logger)
 
 
-    #
     #
     for i, packet in enumerate(pcap_reader):
+        # print(packet.summary())
+        network_layer.run_packet_modifiers(packet)
         e = packet['Ethernet']
+        # print(e.name, e.payload.name)
         e.dst = modifier.modify_dst(dst=e.dst)
         e.src = modifier.modify_src(src=e.src)
 

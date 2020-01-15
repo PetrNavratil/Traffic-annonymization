@@ -1,9 +1,25 @@
 {
   "verbose": true,
   "network_access_layer": {
-    "class": "default_ether_modifier.DefaultEtherModifier"
+    "Ethernet": {
+      "class": "custom_ether_modifier.CustomEtherModifier",
+      "properties": {
+        "src": {
+          "method": "MARKER",
+          "value": "ff:ff:ff:ff:ff:ff",
+          "exclude": []
+        },
+        "dst": {
+          "method": "CUSTOM",
+          "use_function": "my_custom_dst"
+        }
+      }
+    }
   },
+
   "internet_layer": {
-    "class": "default_ip_modifier.DefaultIPModifier"
+    "IP": {
+      "class": "default_ip_modifier.DefaultIPModifier"
+    }
   }
 }

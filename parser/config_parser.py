@@ -15,8 +15,11 @@ class ConfigParser:
         self.verbose = self.config['verbose'] if 'verbose' in self.config else self.verbose
         print(self.verbose)
 
-        self.network_access_layer_class = self.config['network_access_layer']['class']
-        self.internet_layer_class = self.config['internet_layer']['class']
+        self.network_access_layer_class = self.config['network_access_layer']['Ethernet']['class']
+        self.internet_layer_class = self.config['internet_layer']['IP']['class']
+
+        self.network_access_layer_config = self.config['network_access_layer']
+        self.internet_layer = self.config['internet_layer']
 
     @staticmethod
     def __load_config_file(config_path: str):

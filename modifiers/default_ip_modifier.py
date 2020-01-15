@@ -4,8 +4,9 @@ from interfaces.ip_modifier import IPModifier
 
 class DefaultIPModifier(IPModifier):
 
-    def __init__(self, logger: Logger):
+    def __init__(self, protocol: str, logger: Logger):
         self.logger = logger
+        self.protocol = protocol
 
     def modify_src(self, src: str):
         value = self.retrieve_ip(src)

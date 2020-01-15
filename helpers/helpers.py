@@ -2,6 +2,7 @@ import sys
 from importlib import import_module
 from interfaces.ether_modifier import EtherModifier
 from interfaces.ip_modifier import IPModifier
+from logger.logger import Logger
 
 
 def load_modifier_class(class_name: str):
@@ -17,9 +18,14 @@ def load_modifier_class(class_name: str):
 
 def load_ether_modifier(class_name: str, logger) -> EtherModifier:
     class_constructor = load_modifier_class(class_name)
-    return class_constructor(logger)
+    return class_constructor('Ether', logger)
 
 
 def load_ip_modifier(class_name: str, logger) -> IPModifier:
     class_constructor = load_modifier_class(class_name)
-    return class_constructor(logger)
+    return class_constructor('IP', logger)
+
+
+def create_modifier_class(class_name: str, protocol: str, logger: Logger):
+    class_constructor = load_modifier_class(class_name)
+    return class_constructor(protocol, logger)

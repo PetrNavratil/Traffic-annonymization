@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 class IPModifier(ABC):
 
     ip_pool = {}
+    protocol: str
 
     @abstractmethod
     def modify_src(self, src: str) -> str:

@@ -21,3 +21,10 @@ class CustomEtherModifier(EtherModifier):
         self.logger.log('ETHER_src', src, value)
         return value
         # return RandMAC()
+
+    def custom(self, *args):
+        value = l2.Ether(src='aa:aa:aa:aa:aa:aa').src
+        print("custom called")
+        # self.logger.log('ETHER_src', args, value)
+        return value
+        # return RandMAC()

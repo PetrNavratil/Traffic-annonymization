@@ -1,5 +1,6 @@
 import argparse
 import json
+import yaml
 
 
 class ConfigParser:
@@ -12,6 +13,7 @@ class ConfigParser:
         parser.add_argument('--config')
         arguments = vars(parser.parse_args())
         self.config = ConfigParser.__load_config_file(arguments['config'])
+        print(self.config)
         self.verbose = self.config['verbose'] if 'verbose' in self.config else self.verbose
         print(self.verbose)
 
@@ -24,6 +26,7 @@ class ConfigParser:
     @staticmethod
     def __load_config_file(config_path: str):
         with open(config_path, mode='r') as f:
-            return json.load(f)
-
-
+            doc = yaml.load(f, yaml.FullLoader)
+            print(doc)
+            return doc
+            # return json.load(f)

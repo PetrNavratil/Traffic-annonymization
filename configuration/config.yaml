@@ -1,0 +1,41 @@
+verbose: true
+network_access_layer:
+  Ethernet:
+    class: "custom_ether_modifier.CustomEtherModifier"
+    properties:
+      src:
+        method: "MARKER"
+        value: "ff:ff:ff:ff:ff:ff"
+        exclude: []
+      dst:
+        method: "CUSTOM"
+        use_function: "my_custom_dst"
+internet_layer:
+  IP:
+    class: "default_ip_modifier.DefaultIPModifier"
+
+rules:
+#  -
+#      field: Ethernet.src
+#      method: eth_marker
+#      params:
+#          value: "ff:ff:ff:ff:ff:ff"
+#          exclude: []
+#  -
+#      field: Ethernet.dst
+#      method: eth_marker
+#      params:
+#          value: "ff:ff:ff:ff:ff:ff"
+#          exclude: []
+  -
+      field: Ethernet.IP.src
+      method: ip_marker
+      params:
+        value: "255.255.255.255"
+        exclude: []
+#  -
+#      field: Ethernet.IP.dst
+#      method: ip_marker
+#    params:
+#      value: "255:255:255:255"
+#      exclude: []

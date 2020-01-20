@@ -3,6 +3,7 @@ from typing import List
 import scapy.all as scapy
 
 from helpers.modifier_controller import ModifierController
+from helpers.modifier_controller2 import ModifierController2
 from interfaces.ether_modifier import EtherModifier
 from interfaces.ip_modifier import IPModifier
 from logger.logger import Logger
@@ -25,22 +26,26 @@ if __name__ == '__main__':
     network_layer: ModifierController[EtherModifier] = ModifierController(parser.network_access_layer_config, logger)
     internet_layer: ModifierController[IPModifier] = ModifierController(parser.internet_layer, logger)
 
+    controller = ModifierController2(parser.config['rules'], logger)
 
+    a = pcap_reader.read_packet()
+    controller.run_packet_modifiers(a)
     #
-    for i, packet in enumerate(pcap_reader):
-        # print(packet.summary())
-        network_layer.run_packet_modifiers(packet)
-        e = packet['Ethernet']
-        # print(e.name, e.payload.name)
-        e.dst = modifier.modify_dst(dst=e.dst)
-        e.src = modifier.modify_src(src=e.src)
-
-        if 'IP' in packet:
-            ip = packet['IP']
-            ip.src = modifierIP.modify_src(src=ip.src)
-            ip.dst = modifierIP.modify_dst(dst=ip.dst)
-        else:
-            print(f"Divny packet  {i} - {packet.show()}")
-        pcap_writer.write(packet)
+    # for i, packet in enumerate(pcap_reader):
+    #     # print(packet.summary())
+    #     # network_layer.run_packet_modifiers(packet)
+    #     controller.run_packet_modifiers(packet)
+    #     # e = packet['Ethernet']
+    #     # # print(e.name, e.payload.name)
+    #     # e.dst = modifier.modify_dst(dst=e.dst)
+    #     # e.src = modifier.modify_src(src=e.src)
+    #     #
+    #     # if 'IP' in packet:
+    #     #     ip = packet['IP']
+    #     #     ip.src = modifierIP.modify_src(src=ip.src)
+    #     #     ip.dst = modifierIP.modify_dst(dst=ip.dst)
+    #     # else:
+    #     #     print(f"Divny packet  {i} - {packet.show()}")
+    #     pcap_writer.write(packet)
 
 

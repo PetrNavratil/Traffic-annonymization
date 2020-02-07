@@ -1,5 +1,8 @@
 import sys
 from importlib import import_module
+
+from netaddr import IPNetwork
+
 from interfaces.ether_modifier import EtherModifier
 from interfaces.ip_modifier import IPModifier
 from logger.logger import Logger
@@ -29,3 +32,15 @@ def load_ip_modifier(class_name: str, logger) -> IPModifier:
 def create_modifier_class(class_name: str, protocol: str, logger: Logger):
     class_constructor = load_modifier_class(class_name)
     return class_constructor(protocol, logger)
+
+
+def ip_in_range(ip, network_definition):
+    ip_range = IPNetwork(network_definition)
+    return ip in ip_range
+
+
+def excluded_ip(value, exclude):
+    for exclude_definition in exclude:
+        if ip_in_range(value, exclude_definition):
+            return True
+    return False

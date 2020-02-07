@@ -1,3 +1,4 @@
+netaddr
 PyYAML
 lxml==4.4.2
 py==1.8.0

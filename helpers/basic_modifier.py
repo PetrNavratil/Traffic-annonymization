@@ -1,18 +1,30 @@
+from scapy.volatile import RandIP, RandMAC
+
+from helpers.helpers import excluded_ip
+
 
 class BasicModifier:
 
     def ip_marker(self, ip, value, exclude):
-        print('Calling ip marker')
+        if excluded_ip(ip, exclude):
+            return ip
         return value
 
     def ip_random(self, ip, value, exclude):
-        print('Calling ip random')
-        return ip
+        if excluded_ip(ip, exclude):
+            return ip
+        fixed_random_ip = RandIP()
+        return str(fixed_random_ip)
 
     def eth_marker(self, eth, value, exclude):
-        print('Calling eth marker')
+        if excluded_ip(eth, exclude):
+            return eth
         return value
 
     def eth_random(self, eth, value, exclude):
-        print('Calling eth random')
-        return eth
+        if excluded_ip(eth, exclude):
+            return eth
+        fixed_random_mac = RandMAC()
+        return str(fixed_random_mac)
+
+    # def default_marker(self, original, ):

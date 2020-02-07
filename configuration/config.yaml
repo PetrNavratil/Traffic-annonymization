@@ -1,41 +1,47 @@
-verbose: true
-network_access_layer:
-  Ethernet:
-    class: "custom_ether_modifier.CustomEtherModifier"
-    properties:
-      src:
-        method: "MARKER"
-        value: "ff:ff:ff:ff:ff:ff"
-        exclude: []
-      dst:
-        method: "CUSTOM"
-        use_function: "my_custom_dst"
-internet_layer:
-  IP:
-    class: "default_ip_modifier.DefaultIPModifier"
-
+verbose: false
+files:
+  - "../dataset/single_pcaps/test.pcapng"
 rules:
-#  -
-#      field: Ethernet.src
-#      method: eth_marker
-#      params:
-#          value: "ff:ff:ff:ff:ff:ff"
-#          exclude: []
-#  -
-#      field: Ethernet.dst
-#      method: eth_marker
-#      params:
-#          value: "ff:ff:ff:ff:ff:ff"
-#          exclude: []
+  -
+      field: Ethernet.src
+      method: eth_random
+      params:
+          value: "ff:ff:ff:ff:ff:ff"
+          exclude: []
+  -
+      field: Ethernet.dst
+      method: eth_marker
+      params:
+          value: "ff:ff:ff:ff:ff:ff"
+          exclude: []
   -
       field: Ethernet.IP.src
+      method: ip_random
+      params:
+        value: "255.255.255.255"
+        exclude: []
+  -
+      field: Ethernet.IP.dst
+      method: ip_marker
+      shared_with: Ethernet.IP.src
+      params:
+        value: "255.255.255.255"
+        exclude: ["192.168.1.1/8", "138.201.81.199"]
+#        pridat include (komunikace pouze na specificke siti)
+# pridat suffix/preffix pro definici zachovavani prefix//suffix pro jine metody nez marker
+# vzdalenost IP address 1.1.1.2 - 1
+# metriky pro IP addresy - obecne anonymiazce - na zaklade toho si domluvit, ktere budeme delat a ktere ne
+# 6235RF - podivat se
+# podivat se opet na tshark/pyshark a praci s byty
+# expotovat jako json a pak s nim pracovat a modifikovat bytove pole
+#
+
+  -
+  -
+  -
+  -
+      field: Ethernet.IP.sad
       method: ip_marker
       params:
         value: "255.255.255.255"
         exclude: []
-#  -
-#      field: Ethernet.IP.dst
-#      method: ip_marker
-#    params:
-#      value: "255:255:255:255"
-#      exclude: []

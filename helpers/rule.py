@@ -9,6 +9,7 @@ class Rule:
         self.appearance = 0
         self.field = field
         self.field_path = field.split('.')
+        self.field_path_for_shark = self.field_path[(len(self.field_path) -2):]
         self.params = params
         self.method = method
         self.pool = pool

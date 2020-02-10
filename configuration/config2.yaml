@@ -4,30 +4,30 @@ files:
   - "../dataset/single_pcaps/dhcp/dhcp.pcap"
 rules:
   -
-      field: Ethernet.src
+      field: eth.dst
       method: eth_marker_shark
       params:
           value: "ff:ff:ff:ff:ff:ff"
           exclude: []
   -
-      field: Ethernet.dst
-      method: eth_marker
+      field: eth.src
+      method: eth_marker_shark
       params:
           value: "ff:ff:ff:ff:ff:ff"
           exclude: []
-  -
-      field: Ethernet.IP.src
-      method: ip_random
-      params:
-        value: "255.255.255.255"
-        exclude: []
-  -
-      field: Ethernet.IP.dst
-      method: ip_marker
-      shared_with: Ethernet.IP.src
-      params:
-        value: "255.255.255.255"
-        exclude: ["192.168.1.1/8", "138.201.81.199"]
+#  -
+#      field: eth.ip.src
+#      method: ip_random
+#      params:
+#        value: "255.255.255.255"
+#        exclude: []
+#  -
+#      field: eth.ip.dst
+#      method: ip_marker
+#      shared_with: eth.ip.src
+#      params:
+#        value: "255.255.255.255"
+#        exclude: ["192.168.1.1/8", "138.201.81.199"]
 #        pridat include (komunikace pouze na specificke siti)
 # pridat suffix/preffix pro definici zachovavani prefix//suffix pro jine metody nez marker
 # vzdalenost IP address 1.1.1.2 - 1
@@ -36,9 +36,9 @@ rules:
 # podivat se opet na tshark/pyshark a praci s byty
 # expotovat jako json a pak s nim pracovat a modifikovat bytove pole
 #
-  -
-      field: Ethernet.IP.sad
-      method: ip_marker
-      params:
-        value: "255.255.255.255"
-        exclude: []
+#  -
+#      field: eth.ip.sad
+#      method: ip_marker
+#      params:
+#        value: "255.255.255.255"
+#        exclude: []

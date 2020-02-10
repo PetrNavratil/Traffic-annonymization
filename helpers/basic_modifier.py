@@ -1,6 +1,6 @@
 from scapy.volatile import RandIP, RandMAC
 
-from helpers.helpers import excluded_ip
+from helpers.helpers import excluded_ip, string_mac_to_bytes
 
 
 class BasicModifier:
@@ -28,3 +28,5 @@ class BasicModifier:
         return str(fixed_random_mac)
 
     # def default_marker(self, original, ):
+    def eth_marker_shark(self, eth, value, exclude):
+        return string_mac_to_bytes(value)

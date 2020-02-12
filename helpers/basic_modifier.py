@@ -27,6 +27,8 @@ class BasicModifier:
         fixed_random_mac = RandMAC()
         return str(fixed_random_mac)
 
-    # def default_marker(self, original, ):
+    def eth_marker_shark(self, eth, value, exclude):
+        return string_mac_to_bytes(value)
+
     def eth_marker_shark(self, eth, value, exclude):
         return string_mac_to_bytes(value)

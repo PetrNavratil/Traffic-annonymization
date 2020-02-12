@@ -1,7 +1,8 @@
 verbose: false
 files:
-#  - "test.pcapng"
-  - "../dataset/single_pcaps/dhcp/dhcp.pcap"
+  - "test.pcap"
+#  - "weird_tls.pcap"
+#  - "../dataset/single_pcaps/dhcp/dhcp.pcap"
 rules:
   -
       field: eth.dst
@@ -9,12 +10,12 @@ rules:
       params:
           value: "ff:ff:ff:ff:ff:ff"
           exclude: []
-  -
-      field: eth.src
-      method: eth_marker_shark
-      params:
-          value: "ff:ff:ff:ff:ff:ff"
-          exclude: []
+#  -
+#      field: eth.src
+#      method: eth_marker_shark
+#      params:
+#          value: "ff:ff:ff:ff:ff:ff"
+#          exclude: []
 #  -
 #      field: eth.ip.src
 #      method: ip_random

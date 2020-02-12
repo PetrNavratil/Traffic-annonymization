@@ -15,7 +15,9 @@ class Packet:
         # print('protocol', self.protocols)
         for protocol in self.protocols:
             protocol_fields = {}
-            for protocol_field in  list(filter(lambda key: key.endswith('_raw'), packet['_source']['layers'][protocol].keys())):
+            print(f"PARSING PROTOCOL {protocol} {packet['_source']['layers'][protocol]}")
+            for protocol_field in  list(filter(lambda key: key.endswith('_raw') and type(packet['_source']['layers'][protocol][key]) is list, packet['_source']['layers'][protocol].keys())):
+                print(f'PROTOCOL {protocol}, field {protocol_field}')
                 protocol_fields.update([(
                     protocol_field,
                     self.parse_packet_field(packet['_source']['layers'][protocol][protocol_field])

@@ -47,19 +47,9 @@ class TsharkAdapter:
             print(f"Could not parse {file_name}", file=sys.stderr)
             print(e.stderr.decode(), file=sys.stderr)
             sys.exit(1)
-        for packet in json.loads(result.stdout.decode()):
+        for i, packet in enumerate(json.loads(result.stdout.decode())):
+            print(f"PACKET CISLO {i}")
             self.packets.append(Packet(packet))
-
-        # print(self.packets[0].protocol_fields['eth']['eth.dst_raw'])
-        # p = self.packets[0].parse_packet_field(self.packets[0].protocol_fields['eth']['eth.dst_raw'])
-        # print(mac2str("ff:ff:ff:ff:ff:ff"))
-        # print(p.position)
-        # print(p.length)
-        # print(mac2str("ff:ff:ff:cd:ff:ff"), bytes.fromhex('ffffffffffff'))
-
-    # def get_packets(self):
-    #
-    #     return self.result
 
     def get_global_header(self, file_name):
         # TODO: only works for pcap

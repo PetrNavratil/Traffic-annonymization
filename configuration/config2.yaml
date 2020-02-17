@@ -1,6 +1,8 @@
 verbose: false
 files:
-  - "test.pcap"
+#  - "test.pcap"
+  - "test-cap.json"
+#  - "aa.json"
 #  - "weird_tls.pcap"
 #  - "../dataset/single_pcaps/dhcp/dhcp.pcap"
 rules:

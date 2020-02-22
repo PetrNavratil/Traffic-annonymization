@@ -8,7 +8,8 @@ class Rule:
     def __init__(self, field, params, method, pool, logger):
         self.appearance = 0
         self.field = field
-        self.field_path = field.split('.')
+        self.field_path = self.parse_rule_path(field)
+        self.field_path_for_shark = self.field_path[(len(self.field_path) -2):]
         self.params = params
         self.method = method
         self.pool = pool
@@ -30,3 +31,9 @@ class Rule:
 
     def print_rule(self):
         print(f'\n{self.field}\nUsed: {self.appearance}\nPool:\n{self.pool.pool}')
+
+    def parse_rule_path(self, field_path):
+        path = field_path.split('.')
+        path[-1] += '_raw'
+        return path
+

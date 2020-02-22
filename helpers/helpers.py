@@ -2,6 +2,7 @@ import sys
 from importlib import import_module
 
 from netaddr import IPNetwork
+from scapy.utils import mac2str
 
 from interfaces.ether_modifier import EtherModifier
 from interfaces.ip_modifier import IPModifier
@@ -44,3 +45,7 @@ def excluded_ip(value, exclude):
         if ip_in_range(value, exclude_definition):
             return True
     return False
+
+
+def string_mac_to_bytes(string_mac):
+    return mac2str(string_mac)

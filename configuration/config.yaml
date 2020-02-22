@@ -1,10 +1,11 @@
 verbose: false
 files:
-  - "../dataset/single_pcaps/test.pcapng"
+#  - "test.pcapng"
+  - "../dataset/single_pcaps/dhcp/dhcp.pcap"
 rules:
   -
       field: Ethernet.src
-      method: eth_random
+      method: eth_marker_shark
       params:
           value: "ff:ff:ff:ff:ff:ff"
           exclude: []
@@ -35,10 +36,6 @@ rules:
 # podivat se opet na tshark/pyshark a praci s byty
 # expotovat jako json a pak s nim pracovat a modifikovat bytove pole
 #
-
-  -
-  -
-  -
   -
       field: Ethernet.IP.sad
       method: ip_marker

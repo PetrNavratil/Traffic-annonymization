@@ -1,0 +1,65 @@
+verbose: false
+files:
+  - "dhcp.pcap"
+#  - "test.pcap"
+#  - "test-cap.json"
+#  - "../dataset/single_pcaps/big_test.pcap"
+#  - "aa.json"
+#  - "weird_tls.pcap"
+#  - "segmented.pcap"
+#  - "seg.pcap"
+#  - "../dataset/single_pcaps/multiple_records.pcap"
+#  - "../dataset/single_pcaps/the_biggest.pcap"
+#  - "../dataset/single_pcaps/bbig.pcap"
+rules:
+#  -
+#      field: eth.ip.tcp.tls.record.content_type
+#      method: eth_marker_shark
+#      params:
+#          value: '1'
+#          exclude: []
+  -
+      field: eth.dst
+      method: eth_marker_shark
+      params:
+          value: "ff:ff:ff:ff:ff:ff"
+          exclude: []
+  -
+      field: eth.src
+      method: eth_marker_shark
+      params:
+          value: "ff:ff:ff:ff:ff:ff"
+          exclude: []
+  -
+      field: eth.ip.src
+      method: ip_marker_shark
+      params:
+        value: "255.255.255.255"
+        exclude: []
+  -
+      field: eth.ip.dst
+      method: ip_marker_shark
+      params:
+        value: "255.255.255.255"
+        exclude: []
+#  -
+#      field: eth.ip.dst
+#      method: ip_marker
+#      shared_with: eth.ip.src
+#      params:
+#        value: "255.255.255.255"
+#        exclude: ["192.168.1.1/8", "138.201.81.199"]
+#        pridat include (komunikace pouze na specificke siti)
+# pridat suffix/preffix pro definici zachovavani prefix//suffix pro jine metody nez marker
+# vzdalenost IP address 1.1.1.2 - 1
+# metriky pro IP addresy - obecne anonymiazce - na zaklade toho si domluvit, ktere budeme delat a ktere ne
+# 6235RF - podivat se
+# podivat se opet na tshark/pyshark a praci s byty
+# expotovat jako json a pak s nim pracovat a modifikovat bytove pole
+#
+#  -
+#      field: eth.ip.sad
+#      method: ip_marker
+#      params:
+#        value: "255.255.255.255"
+#        exclude: []

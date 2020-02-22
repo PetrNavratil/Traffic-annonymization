@@ -32,8 +32,5 @@ class BasicModifier:
     def eth_marker_shark(self, eth, value, exclude):
         return string_mac_to_bytes(value)
 
-    def eth_marker_shark(self, eth, value, exclude):
-        return string_mac_to_bytes(value)
-
     def ip_marker_shark(self, ip, value: str, exclude):
         return bytearray(map(lambda val: int(val), value.split('.')))

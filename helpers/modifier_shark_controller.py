@@ -4,6 +4,7 @@ from typing import List
 
 from helpers.basic_modifier import BasicModifier
 from helpers.helpers import load_modifier_class
+from helpers.packet_shark import SharkPacket
 from helpers.pool import SharedPool
 from helpers.rule import Rule
 
@@ -18,13 +19,13 @@ class ModifierSharkController:
         self.pools = {}
         self.parsed_rules = self.__prepare_rules(rules)
 
-    def run_packet_modifiers(self, packet):
+    def run_packet_modifiers(self, packet: SharkPacket):
         for rule in self.parsed_rules:
-            attribute = self.__get_packet_attribute(packet, rule.field_path)
-            if attribute is None:
+            field = packet.get_packet_field(rule.field)
+            if field is None:
                 continue
-            modified_attribute = rule.run_rule(attribute)
-            self.__set_packet_attribute(packet, rule.field_path, modified_attribute)
+            modified_attribute = rule.run_rule(field)
+            packet.modify_packet_field(field, modified_attribute)
 
     def __get_method(self, instance, method_name, field):
         try:
@@ -56,33 +57,6 @@ class ModifierSharkController:
                 self.custom_classes[rule['class']] = custom_class
                 return custom_class
         return self.modifier
-
-    def __get_packet_attribute(self, packet, field_path):
-        layer = self.__get_attribute_layer(packet, field_path[:-1])
-        if layer is None:
-            return None
-        try:
-            return layer.getfieldval(field_path[-1])
-        except (AttributeError, IndexError):
-            return None
-
-    def __set_packet_attribute(self, packet, field_path, value):
-        layer = self.__get_attribute_layer(packet, field_path[:-1])
-        if layer is None:
-            return None
-        try:
-            return layer.setfieldval(field_path[-1], value)
-        except (AttributeError, IndexError):
-            return None
-
-    def __get_attribute_layer(self, packet, layer_path):
-        if len(layer_path) == 1:
-            try:
-                return packet[layer_path[0]]
-            except IndexError:
-                return None
-        else:
-            return self.__get_attribute_layer(packet.payload, layer_path[1:])
 
     def unused_rules(self):
         return list(

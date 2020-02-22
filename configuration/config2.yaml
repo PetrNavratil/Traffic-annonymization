@@ -1,26 +1,42 @@
 verbose: false
 files:
+#  - "dhcp.pcap"
 #  - "test.pcap"
-  - "test-cap.json"
+#  - "test-cap.json"
+  - "../dataset/single_pcaps/big_test.pcap"
 #  - "aa.json"
 #  - "weird_tls.pcap"
+#  - "segmented.pcap"
+#  - "seg.pcap"
 #  - "../dataset/single_pcaps/dhcp/dhcp.pcap"
 rules:
-  -
-      field: eth.dst
-      method: eth_marker_shark
-      params:
-          value: "ff:ff:ff:ff:ff:ff"
-          exclude: []
 #  -
+#      field: eth.ip.tcp.tls.record.content_type
+#      method: eth_marker_shark
+#      params:
+#          value: '1'
+#          exclude: []
+#  -
+#      field: eth.dst
+#      method: eth_marker_shark
+#      params:
+#          value: "ff:ff:ff:ff:ff:ff"
+#          exclude: []
+##  -
 #      field: eth.src
 #      method: eth_marker_shark
 #      params:
 #          value: "ff:ff:ff:ff:ff:ff"
 #          exclude: []
+  -
+      field: eth.ip.src
+      method: ip_marker_shark
+      params:
+        value: "255.255.255.255"
+        exclude: []
 #  -
-#      field: eth.ip.src
-#      method: ip_random
+#      field: eth.ip.dst
+#      method: ip_marker_shark
 #      params:
 #        value: "255.255.255.255"
 #        exclude: []

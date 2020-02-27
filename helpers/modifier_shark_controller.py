@@ -21,11 +21,13 @@ class ModifierSharkController:
 
     def run_packet_modifiers(self, packet: SharkPacket):
         for rule in self.parsed_rules:
-            field = packet.get_packet_field(rule.field)
-            if field is None:
+            fields = packet.get_packet_field(rule.field)
+            if fields is None:
                 continue
-            modified_attribute = rule.run_rule(field)
-            packet.modify_packet_field(field, modified_attribute)
+            for field in fields:
+                value = field.get_field_value(packet.packet_bytes)
+                modified_value = rule.run_rule(value)
+                packet.modify_packet_field(field, modified_value)
 
     def __get_method(self, instance, method_name, field):
         try:

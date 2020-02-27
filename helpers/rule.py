@@ -15,15 +15,17 @@ class Rule:
         self.pool = pool
         self.logger = logger
 
-    def run_rule(self, value):
+    def run_rule(self, value: bytearray):
+        hex_value = value.hex()
         self.appearance += 1
-        stored_value = self.pool.get_value(value)
+        stored_value = self.pool.get_value(hex_value)
         if stored_value is not None:
-            self.logger.log(self.field, value, stored_value)
-            return stored_value
+            self.logger.log(self.field, hex_value, stored_value)
+            return bytearray().fromhex(stored_value)
         modified_value = self.method(value, self.params['value'], self.params['exclude'])
-        self.logger.log(self.field, value, modified_value)
-        self.pool.set_value(value, modified_value)
+        modified_value_hex = modified_value.hex()
+        self.logger.log(self.field, hex_value, modified_value_hex)
+        self.pool.set_value(hex_value, modified_value_hex)
         return modified_value
 
     def unused(self):

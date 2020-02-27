@@ -9,13 +9,14 @@ if __name__ == '__main__':
     logger = Logger(parser.verbose)
     adapter = TsharkAdapter(parser.file_names[0])
     controller = ModifierSharkController(parser.get_rules_config(), logger)
-    slicer = adapter.get_packets()
+    packets = adapter.get_packets()
     i = 0
-    for a in slicer:
+    for a in packets:
         i += 1
         print(i)
         shark_packet = SharkPacket(a, controller.parsed_rules)
         controller.run_packet_modifiers(shark_packet)
         adapter.write_modified_packet(shark_packet.get_packet_bytes())
     adapter.close_output_file()
+    controller.write_pool_to_file()
 

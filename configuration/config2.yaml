@@ -12,12 +12,24 @@ files:
 #  - "../dataset/single_pcaps/the_biggest.pcap"
 #  - "../dataset/single_pcaps/bbig.pcap"
 rules:
-#  -
-#      field: eth.ip.tcp.tls.record.content_type
-#      method: eth_marker_shark
-#      params:
-#          value: '1'
-#          exclude: []
+  -
+      field: tls.record.content_type
+      method: eth_marker_shark
+      params:
+          value: '15'
+          exclude: []
+  -
+      field: dhcp.type
+      method: default_number_marker
+      params:
+          value: '2'
+          exclude: []
+  -
+      field: dhcp.ip.your
+      method: ip_marker_shark
+      params:
+          value: '255.255.255.255'
+          exclude: []
   -
       field: eth.dst
       method: eth_marker_shark
@@ -31,21 +43,24 @@ rules:
           value: "ff:ff:ff:ff:ff:ff"
           exclude: []
   -
-      field: eth.ip.src
+      field: ip.src
       method: ip_marker_shark
       params:
         value: "255.255.255.255"
         exclude: []
   -
-      field: eth.ip.dst
+      field: ip.dst
       method: ip_marker_shark
       params:
         value: "255.255.255.255"
         exclude: []
 #  -
-#      field: eth.ip.dst
+#      field: ip.dst
 #      method: ip_marker
+#      namisto shared_with pridat groupy
 #      shared_with: eth.ip.src
+#      exclude ma nejvyssi prioritu
+#      pokud exclude zakaze, include to nepovoli
 #      params:
 #        value: "255.255.255.255"
 #        exclude: ["192.168.1.1/8", "138.201.81.199"]

@@ -34,3 +34,11 @@ class BasicModifier:
 
     def ip_marker_shark(self, ip, value: str, exclude):
         return bytearray(map(lambda val: int(val), value.split('.')))
+
+    def default_marker(self, ip, value, exclude):
+        print(value)
+        return value
+
+    def default_number_marker(self, original_value, value, exclude):
+        original_value_length = len(original_value)
+        return bytearray(int(value).to_bytes(length=original_value_length, byteorder=sys.byteorder))

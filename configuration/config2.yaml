@@ -1,23 +1,46 @@
 verbose: false
 files:
-  - "dhcp.pcap"
+#  - "dhcp.pcap"
+#  - "segmented_tls.pcap"
+#  - "merged.pcap"
 #  - "test.pcap"
-#  - "test-cap.json"
 #  - "../dataset/single_pcaps/big_test.pcap"
-#  - "aa.json"
 #  - "weird_tls.pcap"
 #  - "segmented.pcap"
 #  - "seg.pcap"
 #  - "../dataset/single_pcaps/multiple_records.pcap"
 #  - "../dataset/single_pcaps/the_biggest.pcap"
 #  - "../dataset/single_pcaps/bbig.pcap"
+#  - "../dataset/single_pcaps/huh.pcap"
+#  - "../dataset/single_pcaps/http/http.pcap"
+  - "../dataset/single_pcaps/http/http-chunked-gzip.pcap"
 rules:
   -
       field: tls.record.content_type
-      method: eth_marker_shark
+      method: default_number_marker
       params:
-          value: '15'
+          value: '21'
           exclude: []
+  -
+      field: http.host
+      method: default_text_marker
+      params:
+#        How to new line?
+          value: 'Hello from PN\r\n'
+          exclude: []
+  -
+      field: http.server
+      method: default_text_marker
+      params:
+#        How to new line?
+          value: 'PN SRVR\r\n'
+          exclude: []
+#  -
+#      field: tls.record.version
+#      method: default_number_marker
+#      params:
+#          value: '256'
+#          exclude: []
   -
       field: dhcp.type
       method: default_number_marker

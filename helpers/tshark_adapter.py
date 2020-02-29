@@ -29,11 +29,12 @@ class TsharkAdapter:
 
     PCAP_GLOBAL_HEADER = 24
 
-    def __init__(self, file_name):
+    def __init__(self, file_names):
         self.packets = []
-        self.file_name = file_name
-        self.output_file = open(self.file_name.replace('.pcap', '.altered.pcap'), 'wb')
-        self.write_global_header()
+        self.file_names = file_names
+        self.file_name = None
+        self.output_file = None
+        self.file_index = 0
 
     def get_global_header(self, file_name):
         # TODO: only works for pcap
@@ -59,5 +60,33 @@ class TsharkAdapter:
     def write_modified_packet(self, modified_packet_bytes):
         self.output_file.write(modified_packet_bytes)
 
+    def get_current_file_position(self):
+        return self.output_file.tell()
+
+    def go_to_file_position(self, position):
+        self.output_file.seek(position, os.SEEK_SET)
+
+    def go_to_end_of_file(self):
+        self.go_to_nth_byte_position_from_end(0)
+
+    def go_to_nth_byte_position_from_end(self, length):
+        self.output_file.seek(length * (-1), os.SEEK_END)
+
     def close_output_file(self):
-        self.output_file.close()
+        if self.output_file is not None:
+            self.output_file.close()
+
+    def open_output_file(self):
+        self.output_file = open(self.file_name.replace('.pcap', '.altered.pcap'), 'wb')
+        print(self.output_file.seekable())
+
+    def open_next_file(self):
+        if self.file_index < len(self.file_names):
+            self.close_output_file()
+            self.file_name = self.file_names[self.file_index]
+            self.open_output_file()
+            self.write_global_header()
+            self.file_index += 1
+            return True
+        self.close_output_file()
+        return False

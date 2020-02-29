@@ -3,25 +3,25 @@ import sys
 
 class PacketField:
 
-    def __init__(self, field):
+    # only valid field with position 0
+    ETH_DST_PATH = 'eth.dst_raw'
+
+    def __init__(self, field, field_path=None, json_path=None):
         if len(field) != 5:
             print(f"WRONG PACKET {field}")
             sys.exit(1)
-        self.original_value = field[0]
+        self.field_path = field_path
         self.position = self.get_field(field[1])
         self.length = self.get_field(field[2])
         self.bitmask = self.get_field(field[3])
         self.type = self.get_field(field[4])
-        if self.is_invalid():
-            print('ERROR FIELD')
+        self.is_segmented = False
+        self.json_path = json_path
 
     def get_field(self, field):
         if field == 'None':
             return None
         return int(field)
-
-    def is_invalid(self):
-        return self.position is None or self.length is None
 
     def get_field_value(self, packet_bytes):
         retrieved = packet_bytes[self.position:self.position+self.length]
@@ -51,3 +51,22 @@ class PacketField:
 
     def has_mask(self):
         return self.bitmask != 0
+
+    def validate_segmented_field(self, packet):
+        if self.field_path.startswith('eth'):
+            self.is_segmented = False
+            return
+        raw_field = packet
+        for path in self.__get_raw_parent_field_path():
+            raw_field = raw_field[path]
+        self.is_segmented = self.get_field(raw_field[1]) == 0
+
+    def __get_raw_parent_field_path(self):
+        path_copy = self.json_path.copy()
+        path_copy.reverse()
+        for i, path in enumerate(path_copy):
+            if type(path) is str:
+                path_copy[i] += '_raw'
+                break
+        path_copy.reverse()
+        return path_copy

@@ -7,17 +7,52 @@ from helpers.helpers import load_modifier_class
 from helpers.packet_shark import SharkPacket
 from helpers.pool import SharedPool
 from helpers.rule import Rule
+from helpers.tshark_adapter import TsharkAdapter
 
 
 class ModifierSharkController:
 
-    def __init__(self, rules, logger):
+    def __init__(self, rules, adapter: TsharkAdapter, logger):
         self.rules = rules
         self.modifier = BasicModifier()
         self.custom_classes = {}
         self.logger = logger
         self.pools = {}
         self.parsed_rules = self.__prepare_rules(rules)
+        self.adapter = adapter
+        self.tcp_packets = {}
+
+    def modify_files(self):
+        while self.adapter.open_next_file():
+            print(f'Modification of {self.adapter.file_name}')
+            packets = self.adapter.get_packets()
+            for j, a in enumerate(packets):
+                print(j)
+                shark_packet = SharkPacket(a, self.parsed_rules)
+                # if shark_packet.is_segmented:
+                #     print('SEGMENTED')
+                self.run_packet_modifiers(shark_packet)
+                # write current file (without changes for segmented TCP)
+                self.adapter.write_modified_packet(shark_packet.get_packet_bytes())
+                # store TCP reference
+                if shark_packet.is_tcp:
+                    self.tcp_packets[j+1] = self.adapter.get_current_file_position()
+                # handle segmented TCP modifications
+                if shark_packet.has_segmented_field_modifications:
+                    for packet_index, segment_info in shark_packet.tcp_segment_locations.items():
+                        packet_end_position = self.tcp_packets[packet_index]
+                        # changing current packet
+                        if packet_index == j+1:
+                            self.adapter.go_to_nth_byte_position_from_end(shark_packet.tcp_payload_length)
+                        else:
+                            self.adapter.go_to_file_position(packet_end_position - segment_info.length)
+                        segment_bytes = shark_packet.tcp_reassembled_data[segment_info.position:segment_info.position + segment_info.length]
+                        self.adapter.write_modified_packet(segment_bytes)
+                self.adapter.go_to_end_of_file()
+                # if shark_packet.is_segmented:
+                #     for index in shark_packet.tcp_segment_indexes:
+                #         del self.tcp_packets[int(index)]
+            print(self.tcp_packets)
 
     def run_packet_modifiers(self, packet: SharkPacket):
         for rule in self.parsed_rules:
@@ -25,9 +60,12 @@ class ModifierSharkController:
             if fields is None:
                 continue
             for field in fields:
-                value = field.get_field_value(packet.packet_bytes)
+                # CHOOSE PACKET DATA OR REASSEMBLED DATA
+                packet_bytes = packet.packet_bytes if not field.is_segmented else packet.tcp_reassembled_data
+                value = field.get_field_value(packet_bytes)
                 modified_value = rule.run_rule(value)
-                packet.modify_packet_field(field, modified_value)
+                # CAN BE PROBLEM WITH MODIFYING packet bytes
+                packet.modify_packet_field(field, modified_value, packet_bytes)
 
     def __get_method(self, instance, method_name, field):
         try:

@@ -42,3 +42,9 @@ class BasicModifier:
     def default_number_marker(self, original_value, value, exclude):
         original_value_length = len(original_value)
         return bytearray(int(value).to_bytes(length=original_value_length, byteorder=sys.byteorder))
+
+    def dont_change(self, original_value, value, exclude):
+        return original_value
+
+    def default_text_marker(self, original_value, value:str, exclude):
+        return f'{value}'.encode('utf-8')

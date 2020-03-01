@@ -12,8 +12,9 @@ files:
 #  - "../dataset/single_pcaps/the_biggest.pcap"
 #  - "../dataset/single_pcaps/bbig.pcap"
 #  - "../dataset/single_pcaps/huh.pcap"
-#  - "../dataset/single_pcaps/http/http.pcap"
-  - "../dataset/single_pcaps/http/http-chunked-gzip.pcap"
+  - "../dataset/single_pcaps/http/http.pcap"
+#  - "../dataset/single_pcaps/http/http-chunked-gzip.pcap"
+#  - "../dataset/single_pcaps/http/segmented_html.pcap"
 rules:
   -
       field: tls.record.content_type
@@ -23,18 +24,17 @@ rules:
           exclude: []
   -
       field: http.host
-      method: default_text_marker
+      method: default_http_marker
       params:
-#        How to new line?
-          value: 'Hello from PN\r\n'
+          value: 'Host: PN mega dloooooooooohy texxt'
           exclude: []
-  -
-      field: http.server
-      method: default_text_marker
-      params:
-#        How to new line?
-          value: 'PN SRVR\r\n'
-          exclude: []
+#  -
+#      field: http.server
+#      method: default_text_marker
+#      params:
+##        How to new line?
+#          value: 'PN SRVR\r\n'
+#          exclude: []
 #  -
 #      field: tls.record.version
 #      method: default_number_marker

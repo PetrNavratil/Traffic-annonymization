@@ -48,3 +48,11 @@ class BasicModifier:
 
     def default_text_marker(self, original_value, value:str, exclude):
         return f'{value}'.encode('utf-8')
+
+    def default_http_marker(self, original_value, value: str, exclude):
+        original_value_length = len(original_value)
+        passed_value_length = len(value)
+        copied_value = value[:len(original_value)] \
+            if passed_value_length >= original_value_length \
+            else value[:len(original_value)] + ''.join([' ' for _ in range(original_value_length - passed_value_length)])
+        return (copied_value[:-2] + '\r\n').encode('utf-8')

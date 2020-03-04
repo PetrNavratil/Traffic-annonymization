@@ -1,6 +1,9 @@
 verbose: false
 files:
 #  - "dhcp.pcap"
+#  - "tcp_tls_ignored_record.pcap"
+#  - "tcp_retransmission.pcap"
+#  - "tcp_missing_middle_segment.pcap"
 #  - "segmented_tls.pcap"
 #  - "merged.pcap"
 #  - "test.pcap"
@@ -10,9 +13,9 @@ files:
 #  - "seg.pcap"
 #  - "../dataset/single_pcaps/multiple_records.pcap"
 #  - "../dataset/single_pcaps/the_biggest.pcap"
-#  - "../dataset/single_pcaps/bbig.pcap"
+  - "../dataset/single_pcaps/bbig.pcap"
 #  - "../dataset/single_pcaps/huh.pcap"
-  - "../dataset/single_pcaps/http/http.pcap"
+#  - "../dataset/single_pcaps/http/http.pcap"
 #  - "../dataset/single_pcaps/http/http-chunked-gzip.pcap"
 #  - "../dataset/single_pcaps/http/segmented_html.pcap"
 rules:
@@ -22,61 +25,82 @@ rules:
       params:
           value: '21'
           exclude: []
-  -
-      field: http.host
-      method: default_http_marker
-      params:
-          value: 'Host: PN mega dloooooooooohy texxt'
-          exclude: []
+          include: []
+#  -
+#      field: http.host
+#      method: default_http_marker
+#      params:
+#          value: 'Host: PN mega dloooooooooohy texxt'
+#          exclude: []
+#          include: []
 #  -
 #      field: http.server
-#      method: default_text_marker
+#      method: default_http_marker
 #      params:
-##        How to new line?
-#          value: 'PN SRVR\r\n'
+#          value: 'Server: CHANGE TEST'
 #          exclude: []
+#          include: []
+##  -
+##      field: tls.record.version
+##      method: default_number_marker
+##      params:
+##          value: '256'
+##          exclude: []
 #  -
-#      field: tls.record.version
+#      field: dhcp.type
 #      method: default_number_marker
 #      params:
-#          value: '256'
+#          value: '2'
 #          exclude: []
-  -
-      field: dhcp.type
-      method: default_number_marker
-      params:
-          value: '2'
-          exclude: []
-  -
-      field: dhcp.ip.your
-      method: ip_marker_shark
-      params:
-          value: '255.255.255.255'
-          exclude: []
-  -
-      field: eth.dst
-      method: eth_marker_shark
-      params:
-          value: "ff:ff:ff:ff:ff:ff"
-          exclude: []
-  -
-      field: eth.src
-      method: eth_marker_shark
-      params:
-          value: "ff:ff:ff:ff:ff:ff"
-          exclude: []
-  -
-      field: ip.src
-      method: ip_marker_shark
-      params:
-        value: "255.255.255.255"
-        exclude: []
-  -
-      field: ip.dst
-      method: ip_marker_shark
-      params:
-        value: "255.255.255.255"
-        exclude: []
+#          include: []
+#  -
+#      field: dhcp.ip.your
+#      method: ip_marker
+#      value_group: 'IP'
+#      params:
+#          value: '255.255.255.255'
+#          exclude: []
+#          include: []
+#  -
+#      field: eth.dst
+#      method: eth_marker
+#      value_group: 'ETH'
+#      params:
+#          value: "ff:ff:ff:ff:ff:ff"
+#          exclude: []
+#          include: []
+#  -
+#      field: eth.src
+#      method: eth_marker
+#      value_group: 'ETH'
+#      params:
+#          value: "ff:ff:ff:ff:ff:ff"
+#          exclude: []
+#          include: []
+#  -
+#      field: ip.src
+#      method: ip_marker
+#      value_group: 'IP'
+#      params:
+#        value: "255.255.255.255"
+#        exclude: []
+#        include: []
+#  -
+#      field: ip.dst
+#      method: ip_marker
+#      value_group: 'IP'
+#      params:
+#        value: "255.255.255.255"
+#        exclude: []
+#        include: []
+#  -
+#      field: ip.dst.adadadada
+#      method: ip_marker
+#      value_group: 'IP'
+#      params:
+#        value: "255.255.255.255"
+#        exclude: []
+#        include: []
 #  -
 #      field: ip.dst
 #      method: ip_marker

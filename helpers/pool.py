@@ -1,8 +1,8 @@
 class SharedPool:
 
     def __init__(self, field):
-        self.field = field
         self.pool = {}
+        self.used_by = [field]
 
     def get_value(self, key):
         return self.pool.get(key)
@@ -15,5 +15,8 @@ class SharedPool:
 
     def dump_pool(self):
         return {
-            self.field: self.pool
+            ','.join(self.used_by): self.pool
         }
+
+    def append_field(self, field):
+        self.used_by.append(field)

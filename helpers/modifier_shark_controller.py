@@ -49,9 +49,6 @@ class ModifierSharkController:
                         segment_bytes = shark_packet.tcp_reassembled_data[segment_info.position:segment_info.position + segment_info.length]
                         self.adapter.write_modified_packet(segment_bytes)
                 self.adapter.go_to_end_of_file()
-                # if shark_packet.is_segmented:
-                #     for index in shark_packet.tcp_segment_indexes:
-                #         del self.tcp_packets[int(index)]
             print(self.tcp_packets)
 
     def run_packet_modifiers(self, packet: SharkPacket):
@@ -79,12 +76,16 @@ class ModifierSharkController:
         parsed_rules = []
         for rule in rules:
             field = rule['field']
-            pool = SharedPool(field)
-            self.pools.update([(field, pool)])
+            pool_key = rule['value_group'] if 'value_group' in rule else field
+            print('key', pool_key)
+            if pool_key in self.pools:
+                self.pools[pool_key].append_field(field)
+            else:
+                self.pools[pool_key] = SharedPool(field)
             modifier = self.__get_modifier(rule)
             method = self.__get_method(modifier, rule['method'], field)
             parsed_rules.append(
-                Rule(field, rule["params"], method, pool, self.logger)
+                Rule(field, rule["params"], method, self.pools[pool_key], self.logger)
             )
         return parsed_rules
 
@@ -110,6 +111,7 @@ class ModifierSharkController:
     def pools_dump(self):
         pool_info = {}
         for pool in self.pools.items():
+            print(pool[1].used_by)
             pool_info.update([(pool[0], pool[1].pool)])
         return pool_info
 

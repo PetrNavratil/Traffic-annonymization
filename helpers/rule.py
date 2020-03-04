@@ -22,7 +22,7 @@ class Rule:
         if stored_value is not None:
             self.logger.log(self.field, hex_value, stored_value)
             return bytearray().fromhex(stored_value)
-        modified_value = self.method(value, self.params['value'], self.params['exclude'])
+        modified_value = self.method(value, self.params['value'], self.params['exclude'], self.params['include'])
         modified_value_hex = modified_value.hex()
         self.logger.log(self.field, hex_value, modified_value_hex)
         self.pool.set_value(hex_value, modified_value_hex)

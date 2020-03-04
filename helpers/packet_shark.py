@@ -18,6 +18,10 @@ class SharkPacket:
         self.tcp_segment_locations = self.__get_tcp_segments_location(packet)
         self.tcp_reassembled_data = self.__get_tcp_reassembled_data(packet)
         self.tcp_payload_length = self.__get_tcp_payload_length(packet)
+        self.tcp_retransmission = self.__get_tcp_retransmission(packet)
+        self.tcp_lost = self.__get_tcp_lost(packet)
+        self.tcp_stream = self.__get_tcp_stream(packet)
+        # print(self.tcp_stream)
 
         for rule in rules:
             parsed_fields = self.__get_packet_fields(packet, rule.field_path)
@@ -65,6 +69,33 @@ class SharkPacket:
             return PacketField(packet['tcp']['tcp.payload_raw']).length
         return None
 
+    def __get_tcp_retransmission(self, packet):
+        if self.is_tcp:
+            tcp_analysis = packet['tcp']
+            for path in ['tcp.analysis', 'tcp.analysis.flags', '_ws.expert', 'tcp.analysis.retransmission']:
+                if path not in tcp_analysis:
+                    return False
+                tcp_analysis = tcp_analysis[path]
+            return True
+        return False
+
+    def __get_tcp_lost(self, packet):
+        if self.is_tcp:
+            tcp_analysis = packet['tcp']
+            for path in ['tcp.analysis', 'tcp.analysis.flags', '_ws.expert', 'tcp.analysis.lost_segment']:
+                if path not in tcp_analysis:
+                    return False
+                tcp_analysis = tcp_analysis[path]
+            return True
+        return False
+
+    def __get_tcp_stream(self, packet):
+        if self.is_tcp:
+            if 'tcp.stream' in packet['tcp']:
+                return packet['tcp']['tcp.stream']
+            return None
+        return None
+
     def __has_segmented_field_modifications(self):
         for protocol_field in self.protocol_fields.values():
             for field in protocol_field:
@@ -88,7 +119,7 @@ class SharkPacket:
         field_prefix = prefix_path
         for i, path in enumerate(remaining_path):
             if type(field) is str:
-                print('String field', field)
+                print('String field', field, remaining_path)
                 return None
             if type(field) is list:
                 # print('NESTED', field)

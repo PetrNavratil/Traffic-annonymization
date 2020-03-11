@@ -26,6 +26,10 @@ class BasicModifier:
             else value[:len(original_value)] + ''.join([' ' for _ in range(original_value_length - passed_value_length)])
         return (copied_value[:-2] + '\r\n').encode('utf-8')
 
+    def default_clear_all(self, original_value, value, exclude, include):
+        print(len(original_value))
+        return bytearray(len(original_value))
+
     # ETH
     def eth_marker(self, eth, value, exclude, include):
         # fixed_random_mac = RandMAC()

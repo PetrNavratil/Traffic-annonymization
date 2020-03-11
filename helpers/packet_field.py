@@ -29,6 +29,10 @@ class PacketField:
             return self.__get_masked_value(retrieved)
         return retrieved
 
+    def get_unmasked_field(self, packet_bytes):
+        retrieved = packet_bytes[self.position:self.position+self.length]
+        return retrieved
+
     def shift_count(self):
         reversed_string_mask = f'{self.bitmask:b}'[::-1]
         count = 0

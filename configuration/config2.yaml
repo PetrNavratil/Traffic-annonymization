@@ -1,6 +1,8 @@
 verbose: false
 files:
 #  - "dhcp.pcap"
+#  - "../dataset/single_pcaps/http/http1.pcap"
+  - "../dataset/single_pcaps/http/test.pcap"
 #  - "tcp_tls_ignored_record.pcap"
 #  - "tcp_retransmission.pcap"
 #  - "tcp_missing_middle_segment.pcap"
@@ -8,17 +10,33 @@ files:
 #  - "merged.pcap"
 #  - "test.pcap"
 #  - "../dataset/single_pcaps/big_test.pcap"
+#  - "../dataset/single_pcaps/mega_segmented.pcap"
+#  - "../dataset/single_pcaps/mmega.pcap"
 #  - "weird_tls.pcap"
 #  - "segmented.pcap"
 #  - "seg.pcap"
 #  - "../dataset/single_pcaps/multiple_records.pcap"
 #  - "../dataset/single_pcaps/the_biggest.pcap"
-  - "../dataset/single_pcaps/bbig.pcap"
+#  - "../dataset/single_pcaps/bbig.pcap"
 #  - "../dataset/single_pcaps/huh.pcap"
 #  - "../dataset/single_pcaps/http/http.pcap"
 #  - "../dataset/single_pcaps/http/http-chunked-gzip.pcap"
 #  - "../dataset/single_pcaps/http/segmented_html.pcap"
 rules:
+#  -
+#      field: http.file_data
+#      method: default_clear_all
+#      params:
+#          value: ''
+#          exclude: []
+#          include: []
+  -
+      field: http.content_type
+      method: default_http_marker
+      params:
+          value: 'Content-type: Hello PN'
+          exclude: []
+          include: []
   -
       field: tls.record.content_type
       method: default_number_marker
@@ -26,6 +44,13 @@ rules:
           value: '21'
           exclude: []
           include: []
+##  -
+##      field: ip.version
+##      method: default_number_marker
+##      params:
+##          value: '8'
+##          exclude: []
+##          include: []
 #  -
 #      field: http.host
 #      method: default_http_marker
@@ -40,12 +65,12 @@ rules:
 #          value: 'Server: CHANGE TEST'
 #          exclude: []
 #          include: []
-##  -
-##      field: tls.record.version
-##      method: default_number_marker
-##      params:
-##          value: '256'
-##          exclude: []
+###  -
+###      field: tls.record.version
+###      method: default_number_marker
+###      params:
+###          value: '256'
+###          exclude: []
 #  -
 #      field: dhcp.type
 #      method: default_number_marker

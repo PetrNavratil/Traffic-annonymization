@@ -6,9 +6,10 @@ from helpers.packet_field import PacketField
 
 class SharkPacket:
 
-    def __init__(self, packet, rules):
+    def __init__(self, packet, rules, index):
+        self.index = index
         self.packet_bytes = bytearray.fromhex(packet['frame_raw'][0])
-        self.packet_length = packet['frame_raw'][2]
+        self.packet_length = int(packet['frame_raw'][2])
         self.protocol_fields = {}
         self.packet_header = self.parse_packet_header(packet['frame'])
         self.protocols = list(filter(lambda key: not key.endswith('_raw') and type(packet[key]) is not str, packet.keys()))
@@ -21,6 +22,10 @@ class SharkPacket:
         self.tcp_retransmission = self.__get_tcp_retransmission(packet)
         self.tcp_lost = self.__get_tcp_lost(packet)
         self.tcp_stream = self.__get_tcp_stream(packet)
+        self.tcp_seq = self.__get_tcp_sequence(packet)
+        self.tcp_next_seq = self.__get_tcp_next_sequence(packet)
+        self.tcp_payload_field = self.__get_tcp_payload_field(packet)
+
         # print(self.tcp_stream)
 
         for rule in rules:
@@ -48,7 +53,7 @@ class SharkPacket:
 
     def __get_tcp_segment_indexes(self, packet):
         if self.is_segmented:
-            return packet['tcp.segments']['tcp.segment']
+            return [int(item) for item in packet['tcp.segments']['tcp.segment']]
         return None
 
     def __get_tcp_segments_location(self, packet) -> Union[Dict[int, PacketField], None]:
@@ -72,11 +77,17 @@ class SharkPacket:
     def __get_tcp_retransmission(self, packet):
         if self.is_tcp:
             tcp_analysis = packet['tcp']
-            for path in ['tcp.analysis', 'tcp.analysis.flags', '_ws.expert', 'tcp.analysis.retransmission']:
+            for path in ['tcp.analysis', 'tcp.analysis.flags', '_ws.expert']:
                 if path not in tcp_analysis:
                     return False
                 tcp_analysis = tcp_analysis[path]
-            return True
+
+            if type(tcp_analysis) is list:
+                for info in tcp_analysis:
+                    if 'tcp.analysis.retransmission' in info:
+                        return True
+                return False
+            return 'tcp.analysis.retransmission' in tcp_analysis
         return False
 
     def __get_tcp_lost(self, packet):
@@ -93,6 +104,29 @@ class SharkPacket:
         if self.is_tcp:
             if 'tcp.stream' in packet['tcp']:
                 return packet['tcp']['tcp.stream']
+            return None
+        return None
+
+    def __get_tcp_sequence(self, packet):
+        if self.is_tcp:
+            if 'tcp.seq' in packet['tcp']:
+                return packet['tcp']['tcp.seq']
+            return None
+        return None
+
+    # TODO: ask MARTIN about finding same packet
+    def __get_tcp_next_sequence(self, packet):
+        if self.is_tcp:
+            if 'tcp.nxtseq' in packet['tcp']:
+                return packet['tcp']['tcp.nxtseq']
+            return None
+        return None
+
+    def __get_tcp_payload_field(self, packet):
+        if self.is_tcp:
+            tcp_payload_fields = self.__get_packet_fields(packet, ['tcp', 'payload_raw'])
+            if tcp_payload_fields is not None:
+                return tcp_payload_fields[0]
             return None
         return None
 
@@ -175,3 +209,9 @@ class SharkPacket:
 
     def get_packet_bytes(self):
         return self.packet_header + self.packet_bytes
+
+    def get_field_possible_segments(self, field: PacketField):
+        for j, packet_index in enumerate(self.tcp_segment_indexes):
+            segment_info = self.tcp_segment_locations[packet_index]
+            if field.position >= segment_info.position and field.position < segment_info.position + segment_info.length:
+                return self.tcp_segment_indexes[j:]

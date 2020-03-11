@@ -1,5 +1,6 @@
 import asyncio
 import os
+import shutil
 
 # 913 * Writes
 # the
@@ -28,6 +29,7 @@ from jsonslicer import JsonSlicer
 class TsharkAdapter:
 
     PCAP_GLOBAL_HEADER = 24
+    PCAP_PACKET_HEADER = 16
 
     def __init__(self, file_names):
         self.packets = []
@@ -60,6 +62,10 @@ class TsharkAdapter:
     def write_modified_packet(self, modified_packet_bytes):
         self.output_file.write(modified_packet_bytes)
 
+    def write_modified_field_data(self, data, position):
+        self.go_to_file_position(position)
+        self.write_modified_packet(data)
+
     def get_current_file_position(self):
         return self.output_file.tell()
 
@@ -77,16 +83,18 @@ class TsharkAdapter:
             self.output_file.close()
 
     def open_output_file(self):
-        self.output_file = open(self.file_name.replace('.pcap', '.altered.pcap'), 'wb')
-        print(self.output_file.seekable())
+        self.output_file = open(self.file_name.replace('.pcap', '.altered.pcap'), 'r+b')
 
     def open_next_file(self):
         if self.file_index < len(self.file_names):
             self.close_output_file()
             self.file_name = self.file_names[self.file_index]
-            self.open_output_file()
-            self.write_global_header()
+            # self.open_output_file()
+            # self.write_global_header()
             self.file_index += 1
             return True
-        self.close_output_file()
+        # self.close_output_file()
         return False
+
+    def copy_file(self):
+        shutil.copy2(self.file_name, self.file_name.replace('.pcap', '.altered.pcap'))

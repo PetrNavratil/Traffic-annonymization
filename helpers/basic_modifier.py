@@ -2,7 +2,7 @@ import sys
 
 from scapy.volatile import RandIP, RandMAC
 
-from helpers.helpers import excluded_ip, string_mac_to_bytes
+from helpers.helpers import excluded_ip, string_mac_to_bytes, validate_string_field
 
 
 class BasicModifier:
@@ -13,21 +13,21 @@ class BasicModifier:
         return bytearray(int(value).to_bytes(length=original_value_length, byteorder=sys.byteorder))
 
     def do_not_modify(self, original_value, value, exclude, include):
+        print(self)
         return original_value
 
     def default_text_marker(self, original_value, value:str, exclude, include):
         return f'{value}'.encode('utf-8')
 
     def default_http_marker(self, original_value, value: str, exclude, include):
-        original_value_length = len(original_value)
-        passed_value_length = len(value)
-        copied_value = value[:len(original_value)] \
-            if passed_value_length >= original_value_length \
-            else value[:len(original_value)] + ''.join([' ' for _ in range(original_value_length - passed_value_length)])
-        return (copied_value[:-2] + '\r\n').encode('utf-8')
+        return bytearray(validate_string_field(value, len(original_value), '\r\n').encode())
+
+    def default_http_marker_preserve_prefix(self, original_value, value: str, exclude, include):
+        decoded_value = original_value.decode()
+        head, sep, tail = decoded_value.partition(': ')
+        return bytearray(validate_string_field(head + sep + value, len(original_value), '\r\n').encode())
 
     def default_clear_all(self, original_value, value, exclude, include):
-        print(len(original_value))
         return bytearray(len(original_value))
 
     # ETH

@@ -5,6 +5,7 @@ from typing import List, Dict
 from helpers.basic_modifier import BasicModifier
 from helpers.helpers import load_modifier_class
 from helpers.modification import FieldModification
+from helpers.packet_field import PacketField
 from helpers.packet_modification import PacketModification
 from helpers.packet_shark import SharkPacket
 from helpers.pool import SharedPool
@@ -62,13 +63,13 @@ class ModifierSharkController:
                 self.run_packet_modifiers(shark_packet, self.packets[j+1])
             print("END OF MODIFYING PHASE")
             print("VALIDATING TCP STREAMS")
-            self.validate_tcp_streams()
+            # self.validate_tcp_streams()
             print("COPYING FILE")
             self.adapter.copy_file()
-            print(self.streams.keys())
+            # print(self.streams.keys())
             print("FILE COPIED")
             self.adapter.open_output_file()
-            print("Writting changes")
+            print("Writing changes")
             for key in sorted(self.packets):
                 modifying_packet: PacketModification = self.packets[key]
                 if len(modifying_packet.modifications) > 0:
@@ -76,9 +77,12 @@ class ModifierSharkController:
                 for modification in modifying_packet.modifications:
                     # print('modifying', modification.field.field_path)
                     modification.info()
-                    offset = modifying_packet.packet_start + modification.position
+                    packet_start = modifying_packet.packet_start \
+                        if not modification.frame_modification \
+                        else modifying_packet.packet_start - TsharkAdapter.PCAP_PACKET_HEADER
+                    offset = packet_start + modification.position
                     self.adapter.write_modified_field_data(modification.data, offset)
-            print("Writting changes ended")
+            print("Writing changes ended")
 
     def find_retransmission_packet(self, stream_index, packet_index, sequence, next_sequence):
         if stream_index not in self.streams:
@@ -97,7 +101,6 @@ class ModifierSharkController:
                 invalid_packet.remove_all_modifications_after_tcp()
                 invalid_packet.add_tcp_payload_clear_modification()
 
-
     def run_packet_modifiers(self, packet: SharkPacket, packet_modification: PacketModification):
         for rule in self.parsed_rules:
             fields = packet.get_packet_field(rule.field)
@@ -105,7 +108,7 @@ class ModifierSharkController:
                 continue
             for i, field in enumerate(fields):
                 # CHOOSE PACKET DATA OR REASSEMBLED DATA
-                packet_bytes = packet.packet_bytes if not field.is_segmented else packet.tcp_reassembled_data
+                packet_bytes = self.__get_bytes_for_modification(packet, field)
                 value = field.get_field_value(packet_bytes)
                 modified_value = rule.run_rule(value)
                 field_modification = FieldModification(modified_value, field)
@@ -115,116 +118,36 @@ class ModifierSharkController:
                 if field.has_mask():
                     modified_value = field.get_unmasked_field(packet_bytes)
                     field_modification.set_value(modified_value)
-                #     field is segmented - need to determine, where to write it (segment data and packet)
+                # field is segmented - need to determine, where to write it (segment data and packet)
                 if field.is_segmented:
-                    print(i, 'segmented', packet.index, field.position)
                     possible_segments = packet.get_field_possible_segments(field)
-                    print(possible_segments)
                     field_remaining_length = field.length
-                    print('remaining length', field_remaining_length)
                     for j, packet_index in enumerate(possible_segments):
-                        # TODO: data jsou pres vice segmentu
+                        if field_remaining_length == 0:
+                            break
                         segment_info = packet.tcp_segment_locations[packet_index]
                         segment_position = field.position - segment_info.position if j == 0 else 0
-                        print(f'segment position {segment_position}')
-                        if segment_position + field_remaining_length <= segment_info.length:
-                            print('can fit into whole segment')
-                            # writing to current packet
-                            if packet_index == packet.index:
-                                print('same inxed', packet_index)
-                                tcp_start = packet.packet_length - packet.tcp_payload_length
-                                new_offset = tcp_start + segment_position
-                                aaaa = FieldModification(modified_value[-field_remaining_length:], field)
-                                aaaa.set_position(new_offset)
-                                packet_modification.add_modification(aaaa)
-                            else:
-                                print('different inxed', packet_index)
-                                origin_packet = self.packets[packet_index]
-                                tcp_start = origin_packet.packet_length - segment_info.length
-                                new_offset = tcp_start + segment_position
-                                aaaa = FieldModification(modified_value[-field_remaining_length:], field)
-                                aaaa.set_position(new_offset)
-                                origin_packet.add_modification(aaaa)
-                            break
-                        else:
-                            print('can not fit into whole segment')
-                            write_length = min(segment_info.length - segment_position, field_remaining_length)
-                            print('write ', write_length)
-                            if packet_index == packet.index:
-                                print('same inxed', packet_index)
-                                tcp_start = packet.packet_length - packet.tcp_payload_length
-                                new_offset = tcp_start + segment_position
-                                aaaa = FieldModification(modified_value[-field_remaining_length:-field_remaining_length+write_length], field)
-                                print('wrrrint segment of length', aaaa.data_length)
-                                aaaa.set_position(new_offset)
-                                packet_modification.add_modification(aaaa)
-                            else:
-                                print('different inxed', packet_index)
-                                origin_packet = self.packets[packet_index]
-                                tcp_start = origin_packet.packet_length - segment_info.length
-                                new_offset = tcp_start + segment_position
-                                aaaa = FieldModification(modified_value[-field_remaining_length:-field_remaining_length+write_length], field)
-                                print('wrrrint segment of length', aaaa.data_length)
-                                aaaa.set_position(new_offset)
-                                origin_packet.add_modification(aaaa)
-                            field_remaining_length -= write_length
-
-                        print('remaining length end of cycle', field_remaining_length)
-
-                        #
-                        #
-                        # if field_remaining_length > segment_info.length:
-                        #     print('cant fit here reamining -- ', field_remaining_length - segment_info.length)
-                        # else:
-                        #     break
-                        #
-                        # if packet_index == packet.index:
-                        #     # print(segment_info)
-                        #     tcp_start = packet.packet_length - packet.tcp_payload_length
-                        #     new_offset = tcp_start + field.position
-                        #     field_modification.set_position(new_offset)
-                        #     packet_modification.add_modification(field_modification)
-                        #     print('part of current packet', i)
-                        # else:
-                        #     print('part of different index', segment_info.position + segment_info.length)
-                        #     origin_packet = self.packets[packet_index]
-                        #     # print(origin_packet.packet_length)
-                        #     segment_start = origin_packet.packet_length - segment_info.length
-                        #     # print(segment_start)
-                        #     new_offset = segment_start + field.position
-                        #     field_modification.set_position(new_offset)
-                        #     origin_packet.add_modification(field_modification)
-
-                    # for packet_index, segment_info in packet.tcp_segment_locations.items():
-                    #     if field.position >= segment_info.position and field.position < segment_info.position + segment_info.length:
-                    #         # TODO: data jsou pres vice segmentu
-                    #         if field.length > segment_info.length - segment_info.position:
-                    #             print('cant fit here reamining -- ', field.length - segment_info.length)
-                    #
-                    #         if packet_index == packet.index:
-                    #             # print(segment_info)
-                    #             tcp_start = packet.packet_length - packet.tcp_payload_length
-                    #             new_offset = tcp_start + field.position
-                    #             field_modification.set_position(new_offset)
-                    #             packet_modification.add_modification(field_modification)
-                    #             print('part of current packet', i)
-                    #         else:
-                    #             print('part of different index', packet_index, segment_info.position + segment_info.length)
-                    #             origin_packet = self.packets[packet_index]
-                    #             # print(origin_packet.packet_length)
-                    #             segment_start = origin_packet.packet_length - segment_info.length
-                    #             print(segment_start)
-                    #             new_offset = segment_start + field.position
-                    #             print(new_offset)
-                    #             field_modification.set_position(new_offset)
-                    #             origin_packet.add_modification(field_modification)
-                    #         break
+                        modified_packet = self.packets[packet_index]
+                        tcp_start = self.get_tcp_segment_start(packet.index, modified_packet, segment_info.length)
+                        new_offset = tcp_start + segment_position
+                        write_length = min(segment_info.length - segment_position, field_remaining_length)
+                        mod = self.create_tcp_segment_field_modification(modified_value, field_remaining_length, write_length, new_offset, field)
+                        modified_packet.add_modification(mod)
+                        field_remaining_length -= write_length
                 else:
                     packet_modification.add_modification(field_modification)
+
+    def __get_bytes_for_modification(self, packet: SharkPacket, field: PacketField) -> bytearray:
+        if field.frame_field:
+            return packet.packet_header
+        if field.is_segmented:
+            return packet.tcp_reassembled_data
+        return packet.packet_bytes
 
     def __get_method(self, instance, method_name, field):
         try:
             attr = getattr(instance, method_name)
+            print(attr)
             return attr
         except AttributeError:
             print(f"Could not load method {method_name} for field '{field}'", file=sys.stderr)
@@ -251,7 +174,7 @@ class ModifierSharkController:
             if rule['class'] in self.custom_classes:
                 return self.custom_classes[rule['class']]
             else:
-                custom_class = load_modifier_class(rule['class'])
+                custom_class = load_modifier_class(rule['class'])()
                 self.custom_classes[rule['class']] = custom_class
                 return custom_class
         return self.modifier
@@ -275,3 +198,18 @@ class ModifierSharkController:
     def write_pool_to_file(self):
         with open('metadata/meta.json', 'w') as f:
             json.dump(self.pools_dump(), f)
+
+    def get_tcp_segment_start(self, current_packet_index, modified_packet: PacketModification, segment_length):
+        if current_packet_index == modified_packet.packet_index:
+            return modified_packet.packet_length - modified_packet.tcp_payload_field.length
+        else:
+            return modified_packet.packet_length - segment_length
+
+    def create_tcp_segment_field_modification(self, modified_value, remaining_length, write_length, position, field):
+        modification_data = modified_value[-remaining_length:] \
+            if remaining_length <= write_length \
+            else modified_value[-remaining_length:-remaining_length+write_length]
+        modification = FieldModification(modification_data, field)
+        modification.set_position(position)
+        return modification
+

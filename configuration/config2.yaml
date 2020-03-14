@@ -18,11 +18,19 @@ files:
 #  - "../dataset/single_pcaps/multiple_records.pcap"
 #  - "../dataset/single_pcaps/the_biggest.pcap"
 #  - "../dataset/single_pcaps/bbig.pcap"
+#  - "../dataset/single_pcaps/who_knows.pcap"
 #  - "../dataset/single_pcaps/huh.pcap"
 #  - "../dataset/single_pcaps/http/http.pcap"
 #  - "../dataset/single_pcaps/http/http-chunked-gzip.pcap"
 #  - "../dataset/single_pcaps/http/segmented_html.pcap"
 rules:
+  -
+      field: frame.time_epoch
+      method: default_clear_all
+      params:
+          value: ''
+          exclude: []
+          include: []
 #  -
 #      field: http.file_data
 #      method: default_clear_all
@@ -30,20 +38,36 @@ rules:
 #          value: ''
 #          exclude: []
 #          include: []
-  -
-      field: http.content_type
-      method: default_http_marker
-      params:
-          value: 'Content-type: Hello PN'
-          exclude: []
-          include: []
-  -
-      field: tls.record.content_type
-      method: default_number_marker
-      params:
-          value: '21'
-          exclude: []
-          include: []
+#  -
+#      field: http.response.line
+##      method: modify_field
+#      method: default_http_marker_preserve_prefix
+##      class: custom_xml_modifier.CustomXMLModifier
+#      params:
+#          value: 'PN EVERYWHERE'
+#          exclude: []
+#          include: []
+#  -
+#      field: http.server
+#      method: default_http_marker
+#      params:
+#          value: 'Server:  Runs on COVID-19'
+#          exclude: []
+#          include: []
+#  -
+#      field: tls.record.content_type
+#      method: default_number_marker
+#      params:
+#          value: '23'
+#          exclude: []
+#          include: []
+#  -
+#      field: tls.handshake
+#      method: default_clear_all
+#      params:
+#          value: '23'
+#          exclude: []
+#          include: []
 ##  -
 ##      field: ip.version
 ##      method: default_number_marker

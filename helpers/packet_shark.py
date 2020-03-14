@@ -46,10 +46,10 @@ class SharkPacket:
             timestamp_microseconds = '0'
         origin_size = frame['frame.cap_len']
         current_size = frame['frame.len']
-        return (int(timestamp).to_bytes(4, sys.byteorder) \
+        return bytearray((int(timestamp).to_bytes(4, sys.byteorder) \
                              + int(timestamp_microseconds).to_bytes(4, sys.byteorder, signed=True) \
                              + int(current_size).to_bytes(4, sys.byteorder) \
-                             + int(origin_size).to_bytes(4, sys.byteorder))
+                             + int(origin_size).to_bytes(4, sys.byteorder)))
 
     def __get_tcp_segment_indexes(self, packet):
         if self.is_segmented:
@@ -138,6 +138,8 @@ class SharkPacket:
         return False
 
     def __get_packet_fields(self, packet, field_path) -> Union[List[PacketField], None]:
+        if '.'.join(field_path) == PacketField.FRAME_TIME_PATH:
+            return [PacketField([None, 0, 8, 0, 0], PacketField.FRAME_TIME_PATH)]
         if field_path[0] not in self.protocols:
             return None
         remaining_field_path = field_path[1::]
@@ -169,7 +171,17 @@ class SharkPacket:
             prefixed_field_path = f'{field_prefix}.{path}'
             prefixed_full_field_path = f'{field_prefix}.{".".join(remaining_path[i:])}'
             if prefixed_full_field_path in field:
-                return [PacketField(field[prefixed_full_field_path], prefixed_full_field_path, json_path)]
+                if type(field[prefixed_full_field_path]) is list:
+                    # field is array and no search is needed as its full_field_path_match
+                    if type(field[prefixed_full_field_path][0]) is list:
+                        print("LIST")
+                        resolved_fields = []
+                        for j, f in enumerate(field[prefixed_full_field_path]):
+                            resolved_fields.append(PacketField(f, prefixed_full_field_path, json_path))
+                        return resolved_fields
+                    return [PacketField(field[prefixed_full_field_path], prefixed_full_field_path, json_path)]
+                # it has to be list with field info
+                return None
             if prefixed_field_path not in field:
                 return None
             field = field[prefixed_field_path]
@@ -199,7 +211,6 @@ class SharkPacket:
         write_size = min(len(value), field.length)
         for byte_count in range(write_size):
             packet_bytes[field.position + byte_count] |= value[byte_count]
-
 
     def get_packet_field(self, field_name):
         try:

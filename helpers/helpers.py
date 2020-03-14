@@ -17,6 +17,7 @@ def load_modifier_class(class_name: str):
         return getattr(module, class_name)
     except (ImportError, AttributeError) as e:
         print(f"Could not load class {class_str}", file=sys.stderr)
+        print(f"Could not load class {e}", file=sys.stderr)
         sys.exit(1)
 
 
@@ -49,3 +50,22 @@ def excluded_ip(value, exclude):
 
 def string_mac_to_bytes(string_mac):
     return mac2str(string_mac)
+
+
+def validate_string_field(value: str, original_length, suffix=None):
+    modified_field_length = len(value)
+    if modified_field_length == original_length:
+        return validate_string_suffix(value, suffix)
+    if modified_field_length < original_length:
+        return validate_string_suffix(value.ljust(original_length, value[-1]), suffix)
+    else:
+        return validate_string_suffix(value[:original_length], suffix)
+
+
+def validate_string_suffix(value: str, suffix=None):
+    if suffix is None:
+        return value
+    if value.endswith(suffix):
+        return value
+    return value[:-len(suffix)] + suffix
+

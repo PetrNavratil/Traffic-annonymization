@@ -5,6 +5,7 @@ class PacketField:
 
     # only valid field with position 0
     ETH_DST_PATH = 'eth.dst_raw'
+    FRAME_TIME_PATH = 'frame.time_epoch_raw'
 
     def __init__(self, field, field_path=None, json_path=None):
         if len(field) != 5:
@@ -17,6 +18,7 @@ class PacketField:
         self.type = self.get_field(field[4])
         self.is_segmented = False
         self.json_path = json_path
+        self.frame_field = field_path == PacketField.FRAME_TIME_PATH
 
     def get_field(self, field):
         if field == 'None':
@@ -57,7 +59,7 @@ class PacketField:
         return self.bitmask != 0
 
     def validate_segmented_field(self, packet):
-        if self.field_path.startswith('eth'):
+        if self.field_path.startswith('eth') or self.field_path.startswith('frame'):
             self.is_segmented = False
             return
         raw_field = packet
@@ -68,6 +70,7 @@ class PacketField:
     def __get_raw_parent_field_path(self):
         path_copy = self.json_path.copy()
         path_copy.reverse()
+        print('path', self.json_path)
         for i, path in enumerate(path_copy):
             if type(path) is str:
                 path_copy[i] += '_raw'

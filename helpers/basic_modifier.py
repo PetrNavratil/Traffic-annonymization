@@ -1,3 +1,5 @@
+import binascii
+import struct
 import sys
 
 from scapy.volatile import RandIP, RandMAC
@@ -29,6 +31,21 @@ class BasicModifier:
 
     def default_clear_all(self, original_value, value, exclude, include):
         return bytearray(len(original_value))
+
+    # FRAME
+    def default_time_marker(self, original_value, value: str, exclude, include):
+        split_value = value.split('.')
+        milliseconds, microseconds = split_value if len(split_value) == 2 else [split_value[0], '0']
+        microseconds = microseconds.rstrip('0')
+        microseconds = microseconds if microseconds != '' else '0'
+        print(int().from_bytes(original_value[-4:], 'little'))
+        print(float(value).hex())
+        print(microseconds)
+        print(binascii.hexlify(int(microseconds).to_bytes(4, sys.byteorder)))
+        print(sys.byteorder)
+        print(binascii.hexlify(bytearray(int(milliseconds).to_bytes(4, sys.byteorder) + int(microseconds).to_bytes(4, sys.byteorder, signed=False))))
+        print(binascii.hexlify(original_value))
+        return bytearray(int(milliseconds).to_bytes(4, sys.byteorder) + int(microseconds).to_bytes(4, sys.byteorder, signed=False))
 
     # ETH
     def eth_marker(self, eth, value, exclude, include):

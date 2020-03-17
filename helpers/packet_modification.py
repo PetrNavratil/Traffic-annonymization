@@ -7,12 +7,19 @@ class PacketModification:
 
     BEFORE_TCP_PAYLOAD = ['eth', 'ip', 'tcp']
 
-    def __init__(self, packet_index, packet_start, packet_length, tcp_payload_field):
+    def __init__(self, packet_index, packet_start, packet_length, tcp_payload_field, last_protocol_parsed, has_tcp_segment, tcp_segment_field):
         self.packet_index = packet_index
         self.modifications: List[FieldModification] = []
         self.packet_start = packet_start
         self.packet_length = packet_length
         self.tcp_payload_field = tcp_payload_field
+        self.last_protocol_parsed = last_protocol_parsed
+        self.has_tcp_segment = has_tcp_segment
+        self.tcp_segment_used = False
+        self.tcp_segment_field = tcp_segment_field
+        self.tcp_unknown = self.tcp_payload_field is not None and not self.has_tcp_segment and not self.last_protocol_parsed
+        if self.tcp_unknown:
+            print('IN', packet_index, self.tcp_payload_field, self.has_tcp_segment, self.last_protocol_parsed)
 
     def add_modification(self, modification: FieldModification):
         self.modifications.append(modification)
@@ -25,7 +32,7 @@ class PacketModification:
 
     def remove_all_modifications_after_tcp(self):
         self.modifications = [modification for modification in self.modifications if
-                              any(modification.field.field_path.startswith(before_application)
+                              any(modification.field_path.startswith(before_application)
                                   for before_application in PacketModification.BEFORE_TCP_PAYLOAD)]
 
     def add_tcp_payload_clear_modification(self):
@@ -33,4 +40,8 @@ class PacketModification:
         if self.tcp_payload_field is not None:
             self.modifications.append(FieldModification(bytearray(self.tcp_payload_field.length), self.tcp_payload_field))
 
-
+    def add_tcp_segment_clear_modification(self):
+        if self.tcp_segment_field is not None:
+            print(self.tcp_segment_field.length)
+            self.modifications.append(
+                FieldModification(bytearray(self.tcp_segment_field.length), self.tcp_segment_field))

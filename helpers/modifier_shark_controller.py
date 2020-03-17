@@ -48,7 +48,7 @@ class ModifierSharkController:
                     self.streams[shark_packet.tcp_stream]['packets'].append({'index': shark_packet.index, 'seq':shark_packet.tcp_seq, 'next_seq': shark_packet.tcp_next_seq})
                     if shark_packet.tcp_lost:
                         self.streams[shark_packet.tcp_stream]['valid'] = False
-                self.packets[j+1] = PacketModification(j+1, self.position, shark_packet.packet_length, shark_packet.tcp_payload_field)
+                self.packets[j+1] = PacketModification(j+1, self.position, shark_packet.packet_length, shark_packet.tcp_payload_field, shark_packet.last_protocol_parsed, shark_packet.tcp_has_segment, shark_packet.tcp_segment_field)
                 self.position += shark_packet.packet_length + TsharkAdapter.PCAP_PACKET_HEADER
                 if shark_packet.tcp_retransmission:
                     # print('retransmission')
@@ -61,9 +61,13 @@ class ModifierSharkController:
                         continue
                 # print('Running  modifiers for ', j+1)
                 self.run_packet_modifiers(shark_packet, self.packets[j+1])
+                # validate packet segments
+                if shark_packet.tcp_segment_indexes:
+                    for index in shark_packet.tcp_segment_indexes:
+                        self.packets[index].tcp_segment_used = True
             print("END OF MODIFYING PHASE")
             print("VALIDATING TCP STREAMS")
-            # self.validate_tcp_streams()
+            self.validate_tcp_streams()
             print("COPYING FILE")
             self.adapter.copy_file()
             # print(self.streams.keys())
@@ -72,6 +76,7 @@ class ModifierSharkController:
             print("Writing changes")
             for key in sorted(self.packets):
                 modifying_packet: PacketModification = self.packets[key]
+                print('INDEX', modifying_packet.tcp_segment_used)
                 if len(modifying_packet.modifications) > 0:
                     print('INDEX ', modifying_packet.packet_index)
                 for modification in modifying_packet.modifications:
@@ -83,6 +88,7 @@ class ModifierSharkController:
                     offset = packet_start + modification.position
                     self.adapter.write_modified_field_data(modification.data, offset)
             print("Writing changes ended")
+            print(self.streams)
 
     def find_retransmission_packet(self, stream_index, packet_index, sequence, next_sequence):
         if stream_index not in self.streams:
@@ -92,14 +98,32 @@ class ModifierSharkController:
                 return info['index']
         return None
 
+    # def validate_tcp_streams(self):
+    #     invalid_streams = [item[0] for item in self.streams.items() if item[1]['valid'] is False]
+    #     for invalid_stream in invalid_streams:
+    #         print('CURRUPTED STREAM INDEX', invalid_stream, len(self.streams[invalid_stream]['packets']))
+    #         for packet in self.streams[invalid_stream]['packets']:
+    #             invalid_packet = self.packets[packet['index']]
+    #             invalid_packet.remove_all_modifications_after_tcp()
+    #             invalid_packet.add_tcp_payload_clear_modification()
+
     def validate_tcp_streams(self):
-        invalid_streams = [item[0] for item in self.streams.items() if item[1]['valid'] is False]
-        for invalid_stream in invalid_streams:
-            print('CURRUPTED STREAM INDEX', invalid_stream, len(self.streams[invalid_stream]['packets']))
-            for packet in self.streams[invalid_stream]['packets']:
-                invalid_packet = self.packets[packet['index']]
-                invalid_packet.remove_all_modifications_after_tcp()
-                invalid_packet.add_tcp_payload_clear_modification()
+        # invalid_streams = [item[0] for item in self.streams.items() if item[1]['valid'] is False]
+        # for invalid_stream in invalid_streams:
+        #     print('CURRUPTED STREAM INDEX', invalid_stream, len(self.streams[invalid_stream]['packets']))
+        #     for packet in self.streams[invalid_stream]['packets']:
+        #         invalid_packet = self.packets[packet['index']]
+        #         invalid_packet.remove_all_modifications_after_tcp()
+        #         invalid_packet.add_tcp_payload_clear_modification()
+
+        for packet in self.packets.values():
+            if not packet.tcp_segment_used:
+                # packet.remove_all_modifications_after_tcp()
+                print(packet.packet_index)
+                packet.add_tcp_segment_clear_modification()
+            if packet.tcp_unknown:
+                packet.remove_all_modifications_after_tcp()
+                packet.add_tcp_payload_clear_modification()
 
     def run_packet_modifiers(self, packet: SharkPacket, packet_modification: PacketModification):
         for rule in self.parsed_rules:

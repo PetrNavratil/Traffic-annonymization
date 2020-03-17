@@ -1,13 +1,15 @@
 verbose: false
 files:
 #  - "dhcp.pcap"
-#  - "../dataset/single_pcaps/http/http1.pcap"
-  - "../dataset/single_pcaps/http/test.pcap"
+#  - "../dataset/single_pcaps/http/http.pcap"
+#  - "../dataset/single_pcaps/http/test.pcap"
 #  - "tcp_tls_ignored_record.pcap"
 #  - "tcp_retransmission.pcap"
 #  - "tcp_missing_middle_segment.pcap"
+#  - "segmented_tls_missing_last.pcap"
 #  - "segmented_tls.pcap"
 #  - "merged.pcap"
+  - "tcp_middle.pcap"
 #  - "test.pcap"
 #  - "../dataset/single_pcaps/big_test.pcap"
 #  - "../dataset/single_pcaps/mega_segmented.pcap"
@@ -26,13 +28,13 @@ files:
 rules:
   -
       field: frame.time_epoch
-      method: default_clear_all
+      method: default_time_marker
       params:
-          value: ''
+          value: '1577912212.999999999'
           exclude: []
           include: []
 #  -
-#      field: http.file_data
+#      field: tls.record
 #      method: default_clear_all
 #      params:
 #          value: ''
@@ -110,14 +112,14 @@ rules:
 #          value: '255.255.255.255'
 #          exclude: []
 #          include: []
-#  -
-#      field: eth.dst
-#      method: eth_marker
-#      value_group: 'ETH'
-#      params:
-#          value: "ff:ff:ff:ff:ff:ff"
-#          exclude: []
-#          include: []
+  -
+      field: eth.dst
+      method: eth_marker
+      value_group: 'ETH'
+      params:
+          value: "ff:ff:ff:ff:ff:ff"
+          exclude: []
+          include: []
 #  -
 #      field: eth.src
 #      method: eth_marker

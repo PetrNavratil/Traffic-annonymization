@@ -77,6 +77,7 @@ class ModifierSharkController:
             for key in sorted(self.packets):
                 modifying_packet: PacketModification = self.packets[key]
                 print('INDEX', modifying_packet.tcp_segment_used)
+                modifying_packet.sort_modification()
                 if len(modifying_packet.modifications) > 0:
                     print('INDEX ', modifying_packet.packet_index)
                 for modification in modifying_packet.modifications:
@@ -135,7 +136,7 @@ class ModifierSharkController:
                 packet_bytes = self.__get_bytes_for_modification(packet, field)
                 value = field.get_field_value(packet_bytes)
                 modified_value = rule.run_rule(value)
-                field_modification = FieldModification(modified_value, field)
+                field_modification = FieldModification(modified_value, field, rule.order)
                 # mask return value with current value and retrieve write value
                 # this is done so no read is performed while writing values to the output file
                 packet.modify_packet_field(field, modified_value, packet_bytes)
@@ -179,7 +180,7 @@ class ModifierSharkController:
 
     def __prepare_rules(self, rules) -> List[Rule]:
         parsed_rules = []
-        for rule in rules:
+        for i, rule in enumerate(rules):
             field = rule['field']
             pool_key = rule['value_group'] if 'value_group' in rule else field
             if pool_key in self.pools:
@@ -189,7 +190,7 @@ class ModifierSharkController:
             modifier = self.__get_modifier(rule)
             method = self.__get_method(modifier, rule['method'], field)
             parsed_rules.append(
-                Rule(field, rule["params"], method, self.pools[pool_key], self.logger)
+                Rule(field, rule["params"], method, self.pools[pool_key], self.logger, i)
             )
         return parsed_rules
 
@@ -233,7 +234,7 @@ class ModifierSharkController:
         modification_data = modified_value[-remaining_length:] \
             if remaining_length <= write_length \
             else modified_value[-remaining_length:-remaining_length+write_length]
-        modification = FieldModification(modification_data, field)
+        modification = FieldModification(modification_data, field, 1000)
         modification.set_position(position)
         return modification
 

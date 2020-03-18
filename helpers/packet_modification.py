@@ -1,4 +1,5 @@
 from typing import List
+import operator
 
 from helpers.modification import FieldModification
 
@@ -38,10 +39,16 @@ class PacketModification:
     def add_tcp_payload_clear_modification(self):
         # TCP packet does not need to have PAYLOAD -ACK packety atd
         if self.tcp_payload_field is not None:
-            self.modifications.append(FieldModification(bytearray(self.tcp_payload_field.length), self.tcp_payload_field))
+            self.modifications.append(FieldModification(bytearray(self.tcp_payload_field.length), self.tcp_payload_field, 1000))
 
     def add_tcp_segment_clear_modification(self):
         if self.tcp_segment_field is not None:
             print(self.tcp_segment_field.length)
             self.modifications.append(
-                FieldModification(bytearray(self.tcp_segment_field.length), self.tcp_segment_field))
+                FieldModification(bytearray(self.tcp_segment_field.length), self.tcp_segment_field, 1000))
+
+    def sort_modification(self):
+        print([(item.position, item.field_path) for item in self.modifications])
+        s = sorted(self.modifications, key=operator.attrgetter('position', 'rule_order'))
+        print([(item.position, item.field_path) for item in s])
+        self.modifications = s

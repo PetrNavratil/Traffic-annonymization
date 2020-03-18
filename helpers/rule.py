@@ -5,7 +5,7 @@ class Rule:
 
     pool: SharedPool
 
-    def __init__(self, field, params, method, pool, logger):
+    def __init__(self, field, params, method, pool, logger, order):
         self.appearance = 0
         self.field = field
         self.field_path = self.parse_rule_path(field)
@@ -14,12 +14,14 @@ class Rule:
         self.method = method
         self.pool = pool
         self.logger = logger
+        self.order = order
 
     def run_rule(self, value: bytearray):
         hex_value = value.hex()
         self.appearance += 1
         stored_value = self.pool.get_value(hex_value)
         if stored_value is not None:
+            print("FOUND")
             self.logger.log(self.field, hex_value, stored_value)
             return bytearray().fromhex(stored_value)
         modified_value = self.method(value, self.params['value'], self.params['exclude'], self.params['include'])

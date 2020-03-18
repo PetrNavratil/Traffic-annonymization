@@ -175,6 +175,8 @@ class SharkPacket:
                     # get first last protocol parsed
                     if type(last_protocols[0]) is list:
                         field = PacketField(last_protocols[0])
+                        # TODO: NENI DORESENE, SPATNE TO PARSUJE PRVNI POSLEDNI
+                        print('heeer', field.position, self.tcp_segment_field.position)
                         return field.position - self.tcp_segment_field.position
                     field = PacketField(last_protocols)
                     return field.position - self.tcp_segment_field.position

@@ -48,7 +48,7 @@ class PacketModification:
                 FieldModification(bytearray(self.tcp_segment_field.length), self.tcp_segment_field, 1000))
 
     def sort_modification(self):
-        print([(item.position, item.field_path) for item in self.modifications])
+        # print([(item.position, item.field_path) for item in self.modifications])
         s = sorted(self.modifications, key=operator.attrgetter('position', 'rule_order'))
-        print([(item.position, item.field_path) for item in s])
+        # print([(item.position, item.field_path) for item in s])
         self.modifications = s

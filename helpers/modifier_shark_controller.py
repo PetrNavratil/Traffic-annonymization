@@ -11,11 +11,12 @@ from helpers.packet_shark import SharkPacket
 from helpers.pool import SharedPool
 from helpers.rule import Rule
 from helpers.tshark_adapter import TsharkAdapter
+from parser.tcp_stream_enum import TcpStream
 
 
 class ModifierSharkController:
 
-    def __init__(self, rules, adapter: TsharkAdapter, logger):
+    def __init__(self, rules, adapter: TsharkAdapter, logger, tcp_stream_strategy, reset_pools, generate_meta_files):
         self.rules = rules
         self.modifier = BasicModifier()
         self.custom_classes = {}
@@ -27,15 +28,25 @@ class ModifierSharkController:
         self.packets: Dict[int, PacketModification] = {}
         self.position = TsharkAdapter.PCAP_GLOBAL_HEADER + TsharkAdapter.PCAP_PACKET_HEADER
         self.streams = {}
+        self.tcp_stream_strategy = tcp_stream_strategy
+        self.reset_pools = reset_pools
+        self.generate_meta_files = generate_meta_files
+
+    def reset_file_information(self):
+        if self.reset_pools:
+            print('clearing')
+            for pool in self.pools.values():
+                pool.reset_pool()
+        self.tcp_packets = {}
+        self.packets = {}
+        self.streams = {}
+        self.position = TsharkAdapter.PCAP_GLOBAL_HEADER + TsharkAdapter.PCAP_PACKET_HEADER
 
     def modify_files(self):
         while self.adapter.open_next_file():
             print(f'Modification of {self.adapter.file_name}')
+            self.reset_file_information()
             packets = self.adapter.get_packets()
-            self.tcp_packets = {}
-            self.packets = {}
-            self.streams = {}
-            self.position = TsharkAdapter.PCAP_GLOBAL_HEADER + TsharkAdapter.PCAP_PACKET_HEADER
             for j, a in enumerate(packets):
                 # print(j)
                 shark_packet = SharkPacket(a, self.parsed_rules, j+1)
@@ -89,7 +100,13 @@ class ModifierSharkController:
                     offset = packet_start + modification.position
                     self.adapter.write_modified_field_data(modification.data, offset)
             print("Writing changes ended")
-            print(self.streams)
+            # print(self.streams)
+            if self.reset_pools and self.generate_meta_files:
+                print('SHOULD BE HERE', self.adapter.metadata_file_name)
+                self.write_pool_to_file(self.adapter.metadata_file_name)
+        if self.generate_meta_files and not self.reset_pools:
+            self.write_pool_to_file(self.adapter.general_metadata_file_name)
+
 
     def find_retransmission_packet(self, stream_index, packet_index, sequence, next_sequence):
         if stream_index not in self.streams:
@@ -99,32 +116,20 @@ class ModifierSharkController:
                 return info['index']
         return None
 
-    # def validate_tcp_streams(self):
-    #     invalid_streams = [item[0] for item in self.streams.items() if item[1]['valid'] is False]
-    #     for invalid_stream in invalid_streams:
-    #         print('CURRUPTED STREAM INDEX', invalid_stream, len(self.streams[invalid_stream]['packets']))
-    #         for packet in self.streams[invalid_stream]['packets']:
-    #             invalid_packet = self.packets[packet['index']]
-    #             invalid_packet.remove_all_modifications_after_tcp()
-    #             invalid_packet.add_tcp_payload_clear_modification()
-
     def validate_tcp_streams(self):
-        # invalid_streams = [item[0] for item in self.streams.items() if item[1]['valid'] is False]
-        # for invalid_stream in invalid_streams:
-        #     print('CURRUPTED STREAM INDEX', invalid_stream, len(self.streams[invalid_stream]['packets']))
-        #     for packet in self.streams[invalid_stream]['packets']:
-        #         invalid_packet = self.packets[packet['index']]
-        #         invalid_packet.remove_all_modifications_after_tcp()
-        #         invalid_packet.add_tcp_payload_clear_modification()
-
+        invalid_streams_packets = [] if self.tcp_stream_strategy == TcpStream.CLEVER.value else \
+            [packet['index'] for item in self.streams.items() if item[1]['valid'] is False for packet in item[1]['packets']]
         for packet in self.packets.values():
-            if not packet.tcp_segment_used:
-                # packet.remove_all_modifications_after_tcp()
-                print(packet.packet_index)
-                packet.add_tcp_segment_clear_modification()
-            if packet.tcp_unknown:
+            if self.tcp_stream_strategy == TcpStream.CLEAR.value and packet.packet_index in invalid_streams_packets:
                 packet.remove_all_modifications_after_tcp()
                 packet.add_tcp_payload_clear_modification()
+            else:
+                if not packet.tcp_segment_used:
+                    print(packet.packet_index)
+                    packet.add_tcp_segment_clear_modification()
+                if packet.tcp_unknown:
+                    packet.remove_all_modifications_after_tcp()
+                    packet.add_tcp_payload_clear_modification()
 
     def run_packet_modifiers(self, packet: SharkPacket, packet_modification: PacketModification):
         for rule in self.parsed_rules:
@@ -172,7 +177,6 @@ class ModifierSharkController:
     def __get_method(self, instance, method_name, field):
         try:
             attr = getattr(instance, method_name)
-            print(attr)
             return attr
         except AttributeError:
             print(f"Could not load method {method_name} for field '{field}'", file=sys.stderr)
@@ -220,8 +224,8 @@ class ModifierSharkController:
             pool_info.update([(pool[0], pool[1].pool)])
         return pool_info
 
-    def write_pool_to_file(self):
-        with open('metadata/meta.json', 'w') as f:
+    def write_pool_to_file(self, file_name):
+        with open(file_name, 'w') as f:
             json.dump(self.pools_dump(), f)
 
     def get_tcp_segment_start(self, current_packet_index, modified_packet: PacketModification, segment_length):

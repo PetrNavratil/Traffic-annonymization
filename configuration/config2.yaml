@@ -1,13 +1,16 @@
 verbose: false
+tcp_stream: 'clever'
+reset_pools: true
+generate_meta_files: true
 files:
-#  - "dhcp.pcap"
-#  - "../dataset/single_pcaps/http/http.pcap"
-#  - "../dataset/single_pcaps/http/test.pcap"
+  - "dhcp.pcap"
+  - "../dataset/single_pcaps/http/http.pcap"
+  - "../dataset/single_pcaps/http/test.pcap"
 #  - "tcp_tls_ignored_record.pcap"
 #  - "tcp_retransmission.pcap"
-#  - "tcp_missing_middle_segment.pcap"
+  - "tcp_missing_middle_segment.pcap"
 #  - "segmented_tls_missing_last.pcap"
-  - "segmented_tls.pcap"
+#  - "segmented_tls.pcap"
 #  - "merged.pcap"
 #  - "tcp_middle.pcap"
 #  - "test.pcap"
@@ -33,13 +36,13 @@ rules:
 #          value: '1577912212.0'
 #          exclude: []
 #          include: []
-  -
-      field: tls.handshake
-      method: default_clear_all
-      params:
-          value: ''
-          exclude: []
-          include: []
+#  -
+#      field: tls.handshake
+#      method: default_clear_all
+#      params:
+#          value: ''
+#          exclude: []
+#          include: []
 #  -
 #      field: tls.record
 #      method: default_clear_all
@@ -47,15 +50,16 @@ rules:
 #          value: ''
 #          exclude: []
 #          include: []
-#  -
-#      field: http.response.line
-##      method: modify_field
+  -
+      field: http.request.line
+#      method: modify_field
+      method: http_random_text_preserve_prefix
 #      method: default_http_marker_preserve_prefix
-##      class: custom_xml_modifier.CustomXMLModifier
-#      params:
-#          value: 'PN EVERYWHERE'
-#          exclude: []
-#          include: []
+#      class: custom_xml_modifier.CustomXMLModifier
+      params:
+          value: 'PN EVERYWHERE'
+          exclude: []
+          include: []
 #  -
 #      field: http.server
 #      method: default_http_marker
@@ -127,14 +131,14 @@ rules:
 #          value: '255.255.255.255'
 #          exclude: []
 #          include: []
-#  -
-#      field: eth.dst
-#      method: eth_marker
-#      value_group: 'ETH'
-#      params:
-#          value: "ff:ff:ff:ff:ff:ff"
-#          exclude: []
-#          include: []
+  -
+      field: eth.dst
+      method: eth_marker
+      value_group: 'ETH'
+      params:
+          value: "ff:ff:ff:ff:ff:ff"
+          exclude: []
+          include: []
 #  -
 #      field: eth.src
 #      method: eth_marker
@@ -143,22 +147,22 @@ rules:
 #          value: "ff:ff:ff:ff:ff:ff"
 #          exclude: []
 #          include: []
-#  -
-#      field: ip.src
-#      method: ip_marker
-#      value_group: 'IP'
-#      params:
-#        value: "255.255.255.255"
-#        exclude: []
-#        include: []
-#  -
-#      field: ip.dst
-#      method: ip_marker
-#      value_group: 'IP'
-#      params:
-#        value: "255.255.255.255"
-#        exclude: []
-#        include: []
+  -
+      field: ip.src
+      method: ip_prefix_preservation
+      value_group: 'IP'
+      params:
+        value: "255.255.255.255"
+        exclude: []
+        include: []
+  -
+      field: ip.dst
+      method: ip_random
+      value_group: 'IP2'
+      params:
+        value: "255.255.255.255"
+        exclude: []
+        include: []
 #  -
 #      field: ip.dst.adadadada
 #      method: ip_marker

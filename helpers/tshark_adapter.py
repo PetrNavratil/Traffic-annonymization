@@ -26,6 +26,7 @@ import shutil
 
 from jsonslicer import JsonSlicer
 
+
 class TsharkAdapter:
 
     PCAP_GLOBAL_HEADER = 24
@@ -36,6 +37,9 @@ class TsharkAdapter:
         self.file_names = file_names
         self.file_name = None
         self.output_file = None
+        self.output_file_name = None
+        self.metadata_file_name = None
+        self.general_metadata_file_name = self.get_metadata_path() + 'meta_data.json'
         self.file_index = 0
 
     def get_global_header(self, file_name):
@@ -83,18 +87,24 @@ class TsharkAdapter:
             self.output_file.close()
 
     def open_output_file(self):
-        self.output_file = open(self.file_name.replace('.pcap', '.altered.pcap'), 'r+b')
+        self.output_file = open(self.output_file_name, 'r+b')
 
     def open_next_file(self):
         if self.file_index < len(self.file_names):
             self.close_output_file()
             self.file_name = self.file_names[self.file_index]
-            # self.open_output_file()
-            # self.write_global_header()
+            self.output_file_name = self.file_name.replace('.pcap', '.altered.pcap')
+            self.metadata_file_name = self.get_metadata_file_name()
             self.file_index += 1
             return True
-        # self.close_output_file()
         return False
 
     def copy_file(self):
-        shutil.copy2(self.file_name, self.file_name.replace('.pcap', '.altered.pcap'))
+        shutil.copy2(self.file_name, self.output_file_name)
+
+    def get_metadata_file_name(self):
+        head, sep, tail = self.file_name.rpartition('/')
+        return self.get_metadata_path() + tail.replace('.pcap', '.json')
+
+    def get_metadata_path(self):
+        return os.getcwd() + '/metadata/'

@@ -20,3 +20,6 @@ class SharedPool:
 
     def append_field(self, field):
         self.used_by.append(field)
+
+    def reset_pool(self):
+        self.pool = {}

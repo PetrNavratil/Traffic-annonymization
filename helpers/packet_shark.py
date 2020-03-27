@@ -141,15 +141,16 @@ class SharkPacket:
 
     def __get_tcp_payload_field(self, packet):
         if self.is_tcp:
-            tcp_payload_fields = self.__get_packet_fields(packet, ['tcp', 'payload_raw'])
+            tcp_payload_fields = self.__get_packet_fields(packet, ['tcp', 'payload_raw'], allow_wildcard=False)
             if tcp_payload_fields is not None:
+                print(tcp_payload_fields, self.index)
                 return tcp_payload_fields[0]
             return None
         return None
 
     def __get_tcp_segment_field(self, packet):
         if self.tcp_has_segment:
-            tcp_segment_fields = self.__get_packet_fields(packet, ['tcp', 'segment_data_raw'])
+            tcp_segment_fields = self.__get_packet_fields(packet, ['tcp', 'segment_data_raw'], allow_wildcard=False)
             if tcp_segment_fields is not None:
                 return tcp_segment_fields[0]
             return None
@@ -200,7 +201,7 @@ class SharkPacket:
                     return True
         return False
 
-    def __get_packet_fields(self, packet, field_path) -> Union[List[PacketField], None]:
+    def __get_packet_fields(self, packet, field_path, allow_wildcard=True) -> Union[List[PacketField], None]:
         if '.'.join(field_path) == PacketField.FRAME_TIME_PATH:
             return [PacketField([None, 0, 8, 0, 0], PacketField.FRAME_TIME_PATH)]
         if field_path[0] not in self.protocols:
@@ -212,13 +213,15 @@ class SharkPacket:
             return None
         field_prefix = field_path[0]
         json_path = [field_path[0]]
-        return self.__find_nested_field(field,field_prefix, remaining_field_path, json_path)
+        return self.__find_nested_field(field,field_prefix, remaining_field_path, json_path, not allow_wildcard)
 
-    def __find_nested_field(self, field, prefix_path, remaining_path, json_path) -> Union[List[PacketField], None]:
+    def __find_nested_field(self, field, prefix_path, remaining_path, json_path, wild_card_used) -> Union[List[PacketField], None]:
         field_prefix = prefix_path
         for i, path in enumerate(remaining_path):
             if type(field) is str:
                 print('String field', field, remaining_path)
+                return None
+            if type(field) is int:
                 return None
             if type(field) is list:
                 # print('NESTED', field)
@@ -226,10 +229,12 @@ class SharkPacket:
                 for j, f in enumerate(field):
                     json_path_update = json_path.copy()
                     json_path_update.append(j)
-                    resolved_field = self.__find_nested_field(f, field_prefix,remaining_path[i:], json_path_update)
+                    resolved_field = self.__find_nested_field(f, field_prefix,remaining_path[i:], json_path_update, wild_card_used)
                     if resolved_field is None:
                         continue
                     found_fields.extend(resolved_field)
+                if len(found_fields) == 0:
+                    return None
                 return found_fields
             prefixed_field_path = f'{field_prefix}.{path}'
             prefixed_full_field_path = f'{field_prefix}.{".".join(remaining_path[i:])}'
@@ -241,11 +246,25 @@ class SharkPacket:
                         resolved_fields = []
                         for j, f in enumerate(field[prefixed_full_field_path]):
                             resolved_fields.append(PacketField(f, prefixed_full_field_path, json_path))
+                        if len(resolved_fields) == 0:
+                            return None
                         return resolved_fields
                     return [PacketField(field[prefixed_full_field_path], prefixed_full_field_path, json_path)]
                 # it has to be list with field info
                 return None
             if prefixed_field_path not in field:
+                if not wild_card_used:
+                    found_fields = []
+                    for k, f in field.items():
+                        json_path_update = json_path.copy()
+                        json_path_update.append(k)
+                        resolved_field = self.__find_nested_field(f, field_prefix, remaining_path, json_path_update, True)
+                        if resolved_field is None:
+                            continue
+                        found_fields.extend(resolved_field)
+                    if len(found_fields) == 0:
+                        return None
+                    return found_fields
                 return None
             field = field[prefixed_field_path]
             field_prefix = prefixed_field_path
@@ -262,6 +281,7 @@ class SharkPacket:
             last_layer = path
 
     def modify_packet_field(self, field: PacketField, value, packet_bytes):
+        print("MODYFYING ", field.field_path, field.position, field.is_segmented)
         if field.has_mask():
             packet_bytes[field.position] &= field.get_complementary_mask()
             shifted_value = value[0] << field.shift_count()

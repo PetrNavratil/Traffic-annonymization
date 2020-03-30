@@ -1,3 +1,5 @@
+import random
+import socket
 import sys
 from importlib import import_module
 from typing import Tuple
@@ -5,6 +7,7 @@ from typing import Tuple
 from netaddr import IPNetwork
 from scapy.utils import mac2str
 
+from helpers.ip_class import IpClass
 from interfaces.ether_modifier import EtherModifier
 from interfaces.ip_modifier import IPModifier
 from logger.logger import Logger
@@ -140,4 +143,47 @@ def clear_byte_bits_suffix(value: bytearray, length: int) -> bytearray:
     return clear_byte_bits(value, 8 - length, 8)
 
 
+def ip_bytes_to_int(value: bytearray) -> int:
+    # IP is always in big endien (network order)
+    return int().from_bytes(value, 'big')
+
+
+def ip_int_to_bytes(value: int) -> bytearray:
+    return bytearray(value.to_bytes(4, 'big'))
+
+
+def get_ip_class_range(first_octet: int):
+    if first_octet in IpClass.A.value:
+        return IpClass.A.value
+    if first_octet in IpClass.B.value:
+        return IpClass.B.value
+    if first_octet in IpClass.C.value:
+        return IpClass.C.value
+    if first_octet in IpClass.D.value:
+        return IpClass.D.value
+    if first_octet in IpClass.E.value:
+        return IpClass.E.value
+
+
+def generate_random_number_in_range(interval) -> int:
+    return random.randrange(interval.start, interval.stop)
+
+
+def generate_random_bits(count) -> int:
+    return random.getrandbits(count)
+
+
+def parse_string_time(value: str) -> Tuple[int, int]:
+    split_value = value.split('.')
+    seconds, microseconds = split_value if len(split_value) == 2 else [split_value[0], '0']
+    microseconds = microseconds.rstrip('0')
+    microseconds = microseconds if microseconds != '' else '0'
+    return int(seconds), int(microseconds)
+
+
+def validate_time(decimal: int, nanosecond: bool):
+    if nanosecond:
+        assert decimal < 1000000000, 'Decimal part for nanoseconds file must be less than 1 000 000 000'
+        return
+    assert decimal < 1000000, 'Decimal part for microseconds file must be less than 1 000 000'
 

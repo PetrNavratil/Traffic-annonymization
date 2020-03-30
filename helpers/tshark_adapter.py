@@ -31,6 +31,10 @@ class TsharkAdapter:
 
     PCAP_GLOBAL_HEADER = 24
     PCAP_PACKET_HEADER = 16
+    PCAP_BYTE_ORDERING_BIG = b'\xa1\xb2\xc3\xd4'
+    PCAP_BYTE_ORDERING_LITTLE = b'\xd4\xc3\xb2\xa1'
+    PCAP_BYTE_ORDERING_NANO_BIG = b'\xa1\xb2\x3c\x4d'
+    PCAP_BYTE_ORDERING_NANO_LITTLE = b'\xa1\xb2\x3c\x4d'
 
     def __init__(self, file_names):
         self.packets = []
@@ -41,6 +45,8 @@ class TsharkAdapter:
         self.metadata_file_name = None
         self.general_metadata_file_name = self.get_metadata_path() + 'meta_data.json'
         self.file_index = 0
+        self.nano_resolution = False
+        self.endianness = None
 
     def get_global_header(self, file_name):
         # TODO: only works for pcap
@@ -96,8 +102,27 @@ class TsharkAdapter:
             self.output_file_name = self.file_name.replace('.pcap', '.altered.pcap')
             self.metadata_file_name = self.get_metadata_file_name()
             self.file_index += 1
+            self.endianness, self.nano_resolution = self.get_pcap_info()
             return True
         return False
+
+    def get_pcap_info(self):
+        with open(self.file_name, 'rb') as f:
+            magic_number_array = f.read(4)
+            if magic_number_array == TsharkAdapter.PCAP_BYTE_ORDERING_BIG:
+                return 'big', False
+            if magic_number_array == TsharkAdapter.PCAP_BYTE_ORDERING_LITTLE:
+                return 'little', False
+            if magic_number_array == TsharkAdapter.PCAP_BYTE_ORDERING_NANO_BIG:
+                return 'big', True
+            if magic_number_array == TsharkAdapter.PCAP_BYTE_ORDERING_NANO_LITTLE:
+                return 'little', True
+
+    def get_file_additional_info(self):
+        return {
+            'endianness': self.endianness,
+            'nano_resolution': self.nano_resolution
+        }
 
     def copy_file(self):
         shutil.copy2(self.file_name, self.output_file_name)

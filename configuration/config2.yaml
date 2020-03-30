@@ -4,11 +4,11 @@ reset_pools: true
 generate_meta_files: true
 files:
   - "dhcp.pcap"
-  - "../dataset/single_pcaps/http/http.pcap"
-  - "../dataset/single_pcaps/http/test.pcap"
+#  - "../dataset/single_pcaps/http/http.pcap"
+#  - "../dataset/single_pcaps/http/test.pcap"
 #  - "tcp_tls_ignored_record.pcap"
 #  - "tcp_retransmission.pcap"
-  - "tcp_missing_middle_segment.pcap"
+#  - "tcp_missing_middle_segment.pcap"
 #  - "segmented_tls_missing_last.pcap"
 #  - "segmented_tls.pcap"
 #  - "merged.pcap"
@@ -29,13 +29,16 @@ files:
 #  - "../dataset/single_pcaps/http/http-chunked-gzip.pcap"
 #  - "../dataset/single_pcaps/http/segmented_html.pcap"
 rules:
-#  -
-#      field: frame.time_epoch
-#      method: default_time_marker
-#      params:
-#          value: '1577912212.0'
-#          exclude: []
-#          include: []
+  -
+      field: frame.time_epoch
+      method: default_time_marker
+      params:
+          value: '1102274184.117455000'
+          exclude: []
+          include: []
+          additional:
+            mine: 'Hello'
+            you: 'doing'
 #  -
 #      field: tls.handshake
 #      method: default_clear_all
@@ -139,6 +142,14 @@ rules:
           value: "ff:ff:ff:ff:ff:ff"
           exclude: []
           include: []
+  -
+      field: dhcp.hw.mac_addr
+      method: eth_marker
+      value_group: 'ETH'
+      params:
+          value: "ff:ff:ff:ff:ff:ff"
+          exclude: []
+          include: []
 #  -
 #      field: eth.src
 #      method: eth_marker
@@ -157,7 +168,7 @@ rules:
         include: []
   -
       field: ip.dst
-      method: ip_random
+      method: ip_random_preserve_class
       value_group: 'IP2'
       params:
         value: "255.255.255.255"

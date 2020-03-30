@@ -47,6 +47,7 @@ class ModifierSharkController:
             print(f'Modification of {self.adapter.file_name}')
             self.reset_file_information()
             packets = self.adapter.get_packets()
+            file_info = self.adapter.get_file_additional_info()
             for j, a in enumerate(packets):
                 # print(j)
                 shark_packet = SharkPacket(a, self.parsed_rules, j+1)
@@ -71,7 +72,7 @@ class ModifierSharkController:
                         print(f'{j+1} copied from {duplicate_packet_index}')
                         continue
                 # print('Running  modifiers for ', j+1)
-                self.run_packet_modifiers(shark_packet, self.packets[j+1])
+                self.run_packet_modifiers(shark_packet, self.packets[j+1], file_info)
                 # validate packet segments
                 if shark_packet.tcp_segment_indexes:
                     for index in shark_packet.tcp_segment_indexes:
@@ -131,7 +132,7 @@ class ModifierSharkController:
                     packet.remove_all_modifications_after_tcp()
                     packet.add_tcp_payload_clear_modification()
 
-    def run_packet_modifiers(self, packet: SharkPacket, packet_modification: PacketModification):
+    def run_packet_modifiers(self, packet: SharkPacket, packet_modification: PacketModification, file_info):
         for rule in self.parsed_rules:
             fields = packet.get_packet_field(rule.field)
             if fields is None:
@@ -140,7 +141,7 @@ class ModifierSharkController:
                 # CHOOSE PACKET DATA OR REASSEMBLED DATA
                 packet_bytes = self.__get_bytes_for_modification(packet, field)
                 value = field.get_field_value(packet_bytes)
-                modified_value = rule.run_rule(value)
+                modified_value = rule.run_rule(value, file_info)
                 field_modification = FieldModification(modified_value, field, rule.order)
                 # mask return value with current value and retrieve write value
                 # this is done so no read is performed while writing values to the output file

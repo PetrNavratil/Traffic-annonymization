@@ -19,7 +19,6 @@ class ModifierSharkController:
     def __init__(self, rules, adapter: TsharkAdapter, logger, tcp_stream_strategy, reset_pools, generate_meta_files):
         self.rules = rules
         self.modifier = BasicModifier()
-        self.custom_classes = {}
         self.logger = logger
         self.pools = {}
         self.parsed_rules = self.__prepare_rules(rules)
@@ -201,13 +200,9 @@ class ModifierSharkController:
 
     def __get_modifier(self, rule):
         if 'class' in rule:
-            if rule['class'] in self.custom_classes:
-                return self.custom_classes[rule['class']]
-            else:
-                custom_class = load_modifier_class(rule['class'])()
-                self.custom_classes[rule['class']] = custom_class
-                return custom_class
-        return self.modifier
+            custom_class = load_modifier_class(rule['class'])()
+            return custom_class
+        return BasicModifier()
 
     def unused_rules(self):
         return list(

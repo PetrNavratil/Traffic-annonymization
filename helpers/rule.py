@@ -31,6 +31,8 @@ class Rule:
             self.logger.log(self.field, hex_value, stored_value)
             return bytearray().fromhex(stored_value)
         modified_value = self.method(value, self.params['value'], self.params['exclude'], self.params['include'], {**file_info, **self.params['additional']})
+        if modified_value is None:
+            return None
         modified_value_hex = modified_value.hex()
         self.logger.log(self.field, hex_value, modified_value_hex)
         self.pool.set_value(hex_value, modified_value_hex)

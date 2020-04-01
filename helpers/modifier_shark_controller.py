@@ -1,6 +1,6 @@
 import json
 import sys
-from typing import List, Dict
+from typing import List, Dict, Union
 
 from helpers.basic_modifier import BasicModifier
 from helpers.helpers import load_modifier_class
@@ -19,6 +19,7 @@ class ModifierSharkController:
     def __init__(self, rules, adapter: TsharkAdapter, logger, tcp_stream_strategy, reset_pools, generate_meta_files):
         self.rules = rules
         self.modifier = BasicModifier()
+        self.custom_classes = {}
         self.logger = logger
         self.pools = {}
         self.parsed_rules = self.__prepare_rules(rules)
@@ -71,7 +72,7 @@ class ModifierSharkController:
                         print(f'{j+1} copied from {duplicate_packet_index}')
                         continue
                 # print('Running  modifiers for ', j+1)
-                self.run_packet_modifiers(shark_packet, self.packets[j+1], file_info)
+                self.run_packet_modifiers(shark_packet, self.packets[j+1], {**file_info, 'packet_index': shark_packet.index})
                 # validate packet segments
                 if shark_packet.tcp_segment_indexes:
                     for index in shark_packet.tcp_segment_indexes:
@@ -141,6 +142,9 @@ class ModifierSharkController:
                 packet_bytes = self.__get_bytes_for_modification(packet, field)
                 value = field.get_field_value(packet_bytes)
                 modified_value = rule.run_rule(value, file_info)
+                # not modified, skip its field modification
+                if modified_value is None:
+                    continue
                 field_modification = FieldModification(modified_value, field, rule.order)
                 # mask return value with current value and retrieve write value
                 # this is done so no read is performed while writing values to the output file
@@ -191,18 +195,26 @@ class ModifierSharkController:
                 self.pools[pool_key].append_field(field)
             else:
                 self.pools[pool_key] = SharedPool(field)
-            modifier = self.__get_modifier(rule)
-            method = self.__get_method(modifier, rule['method'], field)
+            class_name = rule['class'] if 'class' in rule else None
+            modifier = self.__get_modifier(class_name, pool_key, rule['method'])
+            method = self.__get_method(modifier['instance'], rule['method'], field)
             parsed_rules.append(
                 Rule(field, rule["params"], method, self.pools[pool_key], self.logger, i)
             )
         return parsed_rules
 
-    def __get_modifier(self, rule):
-        if 'class' in rule:
-            custom_class = load_modifier_class(rule['class'])()
-            return custom_class
-        return BasicModifier()
+    def __get_modifier(self, class_name: Union[str, None], group_name: str, method: str):
+        if group_name not in self.custom_classes:
+            class_instance = BasicModifier() if class_name is None else load_modifier_class(class_name)()
+            self.custom_classes[group_name] = {
+                'class_name': class_name,
+                'instance': class_instance,
+                'method': method
+            }
+        else:
+            class_info = self.custom_classes[group_name]
+            assert class_name == class_info['class_name'] and method == class_info['method'] == method, f"Class name and method must match for shared `value_group`, {group_name}"
+        return self.custom_classes[group_name]
 
     def unused_rules(self):
         return list(

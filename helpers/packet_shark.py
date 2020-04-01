@@ -217,6 +217,7 @@ class SharkPacket:
 
     def __find_nested_field(self, field, prefix_path, remaining_path, json_path, wild_card_used) -> Union[List[PacketField], None]:
         field_prefix = prefix_path
+        print("FIELD PREFIX", field_prefix, remaining_path)
         for i, path in enumerate(remaining_path):
             if type(field) is str:
                 print('String field', field, remaining_path)
@@ -237,6 +238,7 @@ class SharkPacket:
                     return None
                 return found_fields
             prefixed_field_path = f'{field_prefix}.{path}'
+            print('prefixed', prefixed_field_path)
             prefixed_full_field_path = f'{field_prefix}.{".".join(remaining_path[i:])}'
             if prefixed_full_field_path in field:
                 if type(field[prefixed_full_field_path]) is list:
@@ -258,7 +260,11 @@ class SharkPacket:
                     for k, f in field.items():
                         json_path_update = json_path.copy()
                         json_path_update.append(k)
-                        resolved_field = self.__find_nested_field(f, field_prefix, remaining_path, json_path_update, True)
+                        prefix, _, tail = prefixed_field_path.rpartition('.')
+                        cut_index = remaining_path.index(tail) if tail in remaining_path else 0
+                        # print('NESTING', i, prefix, prefixed_field_path,remaining_path[cut_index:], remaining_path[max(0, i-1):], json_path_update)
+                        resolved_field = self.__find_nested_field(f, prefix, remaining_path[cut_index:], json_path_update, False)
+                        # resolved_field = self.__find_nested_field(f, prefixed_field_path, remaining_path[1:], json_path_update, False)
                         if resolved_field is None:
                             continue
                         found_fields.extend(resolved_field)
@@ -270,6 +276,101 @@ class SharkPacket:
             field_prefix = prefixed_field_path
             json_path.append(field_prefix)
         return None
+
+    # def __find_nested_field(self, field, prefix_path, remaining_path, json_path, wild_card_used) -> Union[List[PacketField], None]:
+    #     if not remaining_path:
+    #         return [PacketField(field, prefix_path, json_path)]
+    #     if type(field) is str:
+    #         print('String field', field, remaining_path)
+    #         return None
+    #     if type(field) is int:
+    #         return None
+    #     if type(field) is list:
+    #         # print('NESTED', field)
+    #         found_fields = []
+    #         for j, f in enumerate(field):
+    #             json_path_update = json_path.copy()
+    #             json_path_update.append(j)
+    #             resolved_field = self.__find_nested_field(f, prefix_path, remaining_path, json_path_update,
+    #                                                       wild_card_used)
+    #             if resolved_field is None:
+    #                 continue
+    #             found_fields.extend(resolved_field)
+    #         if len(found_fields) == 0:
+    #             return None
+    #         return found_fields
+    #     prefixed_field_path = f'{prefix_path}.{remaining_path[0]}'
+    #     prefixed_full_field_path = f'{prefix_path}.{".".join(remaining_path)}'
+    #     if prefixed_full_field_path in field:
+    #         if type(field[prefixed_full_field_path]) is list:
+    #             # field is array and no search is needed as its full_field_path_match
+    #             if type(field[prefixed_full_field_path][0]) is list:
+    #                 print("LIST")
+    #                 resolved_fields = []
+    #                 for j, f in enumerate(field[prefixed_full_field_path]):
+    #                     resolved_fields.append(PacketField(f, prefixed_full_field_path, json_path))
+    #                 if len(resolved_fields) == 0:
+    #                     return None
+    #                 return resolved_fields
+    #             return [PacketField(field[prefixed_full_field_path], prefixed_full_field_path, json_path)]
+    #         # it has to be list with field info
+    #         return None
+    #
+    #     for i, path in enumerate(remaining_path):
+    #         if type(field) is str:
+    #             print('String field', field, remaining_path)
+    #             return None
+    #         if type(field) is int:
+    #             return None
+    #         if type(field) is list:
+    #             # print('NESTED', field)
+    #             found_fields = []
+    #             for j, f in enumerate(field):
+    #                 json_path_update = json_path.copy()
+    #                 json_path_update.append(j)
+    #                 resolved_field = self.__find_nested_field(f, field_prefix,remaining_path[i:], json_path_update, wild_card_used)
+    #                 if resolved_field is None:
+    #                     continue
+    #                 found_fields.extend(resolved_field)
+    #             if len(found_fields) == 0:
+    #                 return None
+    #             return found_fields
+    #         prefixed_field_path = f'{field_prefix}.{path}'
+    #         prefixed_full_field_path = f'{field_prefix}.{".".join(remaining_path[i:])}'
+    #         if prefixed_full_field_path in field:
+    #             if type(field[prefixed_full_field_path]) is list:
+    #                 # field is array and no search is needed as its full_field_path_match
+    #                 if type(field[prefixed_full_field_path][0]) is list:
+    #                     print("LIST")
+    #                     resolved_fields = []
+    #                     for j, f in enumerate(field[prefixed_full_field_path]):
+    #                         resolved_fields.append(PacketField(f, prefixed_full_field_path, json_path))
+    #                     if len(resolved_fields) == 0:
+    #                         return None
+    #                     return resolved_fields
+    #                 return [PacketField(field[prefixed_full_field_path], prefixed_full_field_path, json_path)]
+    #             # it has to be list with field info
+    #             return None
+    #         if prefixed_field_path not in field:
+    #             if not wild_card_used:
+    #                 found_fields = []
+    #                 for k, f in field.items():
+    #                     json_path_update = json_path.copy()
+    #                     json_path_update.append(k)
+    #                     resolved_field = self.__find_nested_field(f, field_prefix, remaining_path, json_path_update, True)
+    #                     # print('NESTING', field_prefix, prefixed_field_path,  remaining_path, json_path_update)
+    #                     # resolved_field = self.__find_nested_field(f, prefixed_field_path, remaining_path[1:], json_path_update, False)
+    #                     if resolved_field is None:
+    #                         continue
+    #                     found_fields.extend(resolved_field)
+    #                 if len(found_fields) == 0:
+    #                     return None
+    #                 return found_fields
+    #             return None
+    #         field = field[prefixed_field_path]
+    #         field_prefix = prefixed_field_path
+    #         json_path.append(field_prefix)
+    #     return None
 
     def __get_attribute_layer(self, layer_path):
         last_layer = None

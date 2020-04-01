@@ -9,13 +9,16 @@ from scapy.volatile import RandIP, RandMAC
 
 from helpers.helpers import excluded_ip, string_mac_to_bytes, validate_string_field, generate_random_text, \
     string_to_bytearray, string_split_prefix, generate_prefixed_random_text, HTML_LINE_PREFIX_DELIMITER, \
-    generate_random_bits, generate_random_number_in_range, get_ip_class_range, parse_string_time, validate_time
+    generate_random_bits, generate_random_number_in_range, get_ip_class_range, parse_string_time, validate_time, \
+    time_stamp_to_byte_array, Timestamp, increment_time_stamp, byte_array_to_timestamp
 
 
 class BasicModifier:
 
     def __init__(self):
         self.crypto_pan = CryptoPAn('32-char-str-for-AES-key-and-pad.'.encode())
+        self.start_timestamp = None
+        self.timestamp_increment = None
 
     # DEFAULT
     def default_number_marker(self, original_value, value, exclude, include, additional_parameters):
@@ -26,7 +29,7 @@ class BasicModifier:
         return original_value
 
     def default_text_marker(self, original_value, value:str, exclude, include, additional_parameters):
-        return f'{value}'.encode('utf-8')
+        return validate_string_field(value, len(original_value))
 
     def random_text(self, original_value, value:str, exclude, include, additional_parameters):
         return generate_random_text(len(original_value)).encode('utf-8')
@@ -50,22 +53,24 @@ class BasicModifier:
 
     # FRAME
     def default_time_marker(self, original_value, value: str, exclude, include, additional_parameters):
-        # print('ADD', additional_parameters)
-        # split_value = value.split('.')
-        # milliseconds, microseconds = split_value if len(split_value) == 2 else [split_value[0], '0']
-        # microseconds = microseconds.rstrip('0')
-        # microseconds = microseconds if microseconds != '' else '0'
-        # print(int().from_bytes(original_value[-4:], 'little'))
-        # print(float(value).hex())
-        # print(microseconds)
-        # print(binascii.hexlify(int(microseconds).to_bytes(4, sys.byteorder)))
-        # print(sys.byteorder)
-        # print(binascii.hexlify(bytearray(int(milliseconds).to_bytes(4, sys.byteorder) + int(microseconds).to_bytes(4, sys.byteorder, signed=False))))
-        # print(binascii.hexlify(original_value))
-        seconds, microseconds = parse_string_time(value)
-        validate_time(microseconds, additional_parameters['nano_resolution'])
-        byte_order = additional_parameters['endianness']
-        return bytearray(int(seconds).to_bytes(4, byte_order) + int(microseconds).to_bytes(4, byte_order, signed=False))
+        # if additional_parameters['packet'] != additional_parameters['packet_index']:
+        #     return None
+        timestamp = parse_string_time(value, additional_parameters['nano_resolution'])
+        return time_stamp_to_byte_array(timestamp, additional_parameters['endianness'])
+
+    def time_stamp_increment(self, original_value, value: str, exclude, include, additional_parameters):
+        if self.timestamp_increment is None:
+            self.timestamp_increment = parse_string_time(value, additional_parameters['nano_resolution'])
+        original_time_stamp = byte_array_to_timestamp(original_value, additional_parameters['endianness'])
+        new_time_stamp = increment_time_stamp(original_time_stamp, self.timestamp_increment, additional_parameters['nano_resolution'])
+        return time_stamp_to_byte_array(new_time_stamp, additional_parameters['endianness'])
+
+    def time_stamp_clear_and_increment(self, original_value, value: str, exclude, include, additional_parameters):
+        if self.start_timestamp is None:
+            self.start_timestamp = Timestamp(0,0)
+            self.timestamp_increment = parse_string_time(value, additional_parameters['nano_resolution'])
+        self.start_timestamp = increment_time_stamp(self.start_timestamp, self.timestamp_increment, additional_parameters['nano_resolution'])
+        return time_stamp_to_byte_array(self.start_timestamp, additional_parameters['endianness'])
 
     # ETH
     def eth_marker(self, eth, value, exclude, include, additional_parameters):

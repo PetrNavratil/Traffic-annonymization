@@ -2,9 +2,11 @@ verbose: false
 tcp_stream: 'clever'
 reset_pools: true
 generate_meta_files: true
+wildcard_count: 1
 files:
   - "dhcp.pcap"
 #  - "../dataset/single_pcaps/http/http.pcap"
+#  - "../dataset/single_pcaps/ssdp.pcap"
 #  - "../dataset/single_pcaps/http/test.pcap"
 #  - "tcp_tls_ignored_record.pcap"
 #  - "tcp_retransmission.pcap"
@@ -29,45 +31,57 @@ files:
 #  - "../dataset/single_pcaps/http/http-chunked-gzip.pcap"
 #  - "../dataset/single_pcaps/http/segmented_html.pcap"
 rules:
+#  -
+#      field: frame.time_epoch
+#      method: default_time_marker
+#      params:
+#          value: '0.400'
+#          exclude: []
+#          include: []
+#          additional:
+#            mine: 'Hello'
+#            you: 'doing'
+#            packet: 3
   -
       field: frame.time_epoch
-      method: default_time_marker
+      method: time_stamp_clear_and_increment
       params:
-          value: '1102274184.117455000'
+          value: '0.500000'
           exclude: []
           include: []
           additional:
             mine: 'Hello'
             you: 'doing'
+            packet: 3
 #  -
-#      field: tls.handshake
+#      field: tls.handshake.server_point
 #      method: default_clear_all
 #      params:
 #          value: ''
 #          exclude: []
 #          include: []
-#  -
+##  -
 #      field: tls.record
 #      method: default_clear_all
 #      params:
 #          value: ''
 #          exclude: []
 #          include: []
-  -
-      field: http.request.line
-#      method: modify_field
-      method: http_random_text_preserve_prefix
-#      method: default_http_marker_preserve_prefix
-#      class: custom_xml_modifier.CustomXMLModifier
-      params:
-          value: 'PN EVERYWHERE'
-          exclude: []
-          include: []
 #  -
-#      field: http.server
-#      method: default_http_marker
+#      field: http.request.line
+##      method: modify_field
+#      method: http_random_text_preserve_prefix
+##      method: default_http_marker_preserve_prefix
+##      class: custom_xml_modifier.CustomXMLModifier
 #      params:
-#          value: 'Server:  Runs on COVID-19'
+#          value: 'PN EVERYWHERE'
+#          exclude: []
+#          include: []
+#  -
+#      field: ssdp.http.server
+#      method: http_random_text_preserve_prefix
+#      params:
+#          value: ''
 #          exclude: []
 #          include: []
 #  -
@@ -113,12 +127,12 @@ rules:
 #          value: 'Server: CHANGE TEST'
 #          exclude: []
 #          include: []
-###  -
-###      field: tls.record.version
-###      method: default_number_marker
-###      params:
-###          value: '256'
-###          exclude: []
+#  -
+#      field: tls.record.version
+#      method: default_number_marker
+#      params:
+#          value: '256'
+#          exclude: []
 #  -
 #      field: dhcp.type
 #      method: default_number_marker
@@ -134,22 +148,22 @@ rules:
 #          value: '255.255.255.255'
 #          exclude: []
 #          include: []
-  -
-      field: eth.dst
-      method: eth_marker
-      value_group: 'ETH'
-      params:
-          value: "ff:ff:ff:ff:ff:ff"
-          exclude: []
-          include: []
-  -
-      field: dhcp.hw.mac_addr
-      method: eth_marker
-      value_group: 'ETH'
-      params:
-          value: "ff:ff:ff:ff:ff:ff"
-          exclude: []
-          include: []
+#  -
+#      field: eth.dst
+#      method: eth_marker
+#      value_group: 'ETH'
+#      params:
+#          value: "ff:ff:ff:ff:ff:ff"
+#          exclude: []
+#          include: []
+#  -
+#      field: dhcp.hw.mac_addr
+#      method: eth_marker
+#      value_group: 'ETH1'
+#      params:
+#          value: "ff:ff:ff:ff:ff:ff"
+#          exclude: []
+#          include: []
 #  -
 #      field: eth.src
 #      method: eth_marker
@@ -158,22 +172,22 @@ rules:
 #          value: "ff:ff:ff:ff:ff:ff"
 #          exclude: []
 #          include: []
-  -
-      field: ip.src
-      method: ip_prefix_preservation
-      value_group: 'IP'
-      params:
-        value: "255.255.255.255"
-        exclude: []
-        include: []
-  -
-      field: ip.dst
-      method: ip_random_preserve_class
-      value_group: 'IP2'
-      params:
-        value: "255.255.255.255"
-        exclude: []
-        include: []
+#  -
+#      field: ip.src
+#      method: ip_prefix_preservation
+#      value_group: 'IP'
+#      params:
+#        value: "255.255.255.255"
+#        exclude: []
+#        include: []
+#  -
+#      field: ip.dst
+#      method: ip_random_preserve_class
+#      value_group: 'IP2'
+#      params:
+#        value: "255.255.255.255"
+#        exclude: []
+#        include: []
 #  -
 #      field: ip.dst.adadadada
 #      method: ip_marker

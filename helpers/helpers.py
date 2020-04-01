@@ -1,6 +1,7 @@
 import random
 import socket
 import sys
+from collections import namedtuple
 from importlib import import_module
 from typing import Tuple
 
@@ -15,6 +16,10 @@ from logger.logger import Logger
 from lorem.text import TextLorem
 
 HTML_LINE_PREFIX_DELIMITER = ': '
+
+Timestamp = namedtuple('Timestamp', ['seconds', 'decimal'])
+MICROSECONDS_MAX = 1000000
+NANOSECONDS_MAX = 1000000000
 
 
 def load_modifier_class(class_name: str):
@@ -173,17 +178,46 @@ def generate_random_bits(count) -> int:
     return random.getrandbits(count)
 
 
-def parse_string_time(value: str) -> Tuple[int, int]:
+def parse_string_time(value: str, nano_resolution) -> Timestamp:
     split_value = value.split('.')
-    seconds, microseconds = split_value if len(split_value) == 2 else [split_value[0], '0']
-    microseconds = microseconds.rstrip('0')
-    microseconds = microseconds if microseconds != '' else '0'
-    return int(seconds), int(microseconds)
+    seconds, decimal = split_value if len(split_value) == 2 else [split_value[0], '0']
+    decimal = int(decimal) if decimal != '' else 0
+    seconds = int(seconds)
+    validate_time(decimal, nano_resolution)
+    return Timestamp(seconds, decimal)
 
 
-def validate_time(decimal: int, nanosecond: bool):
-    if nanosecond:
-        assert decimal < 1000000000, 'Decimal part for nanoseconds file must be less than 1 000 000 000'
+def time_stamp_to_byte_array(timestamp: Timestamp, byte_order) -> bytearray:
+    return bytearray(timestamp.seconds.to_bytes(4, byte_order) + timestamp.decimal.to_bytes(4, byte_order, signed=False))
+
+
+def byte_array_to_timestamp(value: bytearray, byte_order) -> Timestamp:
+    seconds = int().from_bytes(value[0:4], byte_order)
+    decimal = int().from_bytes(value[4:], byte_order)
+    return Timestamp(seconds, decimal)
+
+
+def validate_time(decimal: int, nano_resolution: bool):
+    if nano_resolution:
+        assert decimal < NANOSECONDS_MAX, 'Decimal part for nanoseconds file must be less than 1 000 000 000'
         return
-    assert decimal < 1000000, 'Decimal part for microseconds file must be less than 1 000 000'
+    assert decimal < MICROSECONDS_MAX, 'Decimal part for microseconds file must be less than 1 000 000'
 
+
+def correct_time_stamp_decimal(timestamp: Timestamp, nano_resolution: bool) -> Timestamp:
+    if timestamp.decimal < 0:
+        new_seconds = timestamp.seconds - 1
+        assert new_seconds >= 0
+        return Timestamp(new_seconds, (NANOSECONDS_MAX if nano_resolution else MICROSECONDS_MAX) + timestamp.decimal)
+    else:
+        if nano_resolution and timestamp.decimal >= NANOSECONDS_MAX:
+            return Timestamp(timestamp.seconds + 1, timestamp.decimal - NANOSECONDS_MAX)
+        if not nano_resolution and timestamp.decimal >= MICROSECONDS_MAX:
+            return Timestamp(timestamp.seconds + 1, timestamp.decimal - MICROSECONDS_MAX)
+    return timestamp
+
+
+def increment_time_stamp(start: Timestamp, increment: Timestamp, nano_resolution: bool) -> Timestamp:
+    new_seconds = start.seconds + increment.seconds
+    new_decimal = start.decimal + increment.decimal
+    return correct_time_stamp_decimal(Timestamp(new_seconds, new_decimal), nano_resolution)

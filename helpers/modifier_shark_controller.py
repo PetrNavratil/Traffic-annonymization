@@ -49,7 +49,7 @@ class ModifierSharkController:
             packets = self.adapter.get_packets()
             file_info = self.adapter.get_file_additional_info()
             for j, a in enumerate(packets):
-                # print(j)
+                print('PACKET', j+1)
                 shark_packet = SharkPacket(a, self.parsed_rules, j+1)
                 if shark_packet.is_tcp:
                     if shark_packet.tcp_stream not in self.streams:

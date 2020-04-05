@@ -63,7 +63,7 @@ class PacketField:
             self.is_segmented = False
             return
         raw_field = packet
-        print('raw', self.__get_raw_parent_field_path())
+        # print('raw', self.__get_raw_parent_field_path())
         for path in self.__get_raw_parent_field_path():
             raw_field = raw_field[path]
         self.is_segmented = self.get_field(raw_field[1]) == 0

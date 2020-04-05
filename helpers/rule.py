@@ -8,6 +8,7 @@ class Rule:
         'value': None,
         'exclude': [],
         'include': [],
+        'validator': None,
         'additional': {}
     }
 
@@ -27,10 +28,10 @@ class Rule:
         self.appearance += 1
         stored_value = self.pool.get_value(hex_value)
         if stored_value is not None:
-            print("FOUND")
+            # print("FOUND")
             self.logger.log(self.field, hex_value, stored_value)
             return bytearray().fromhex(stored_value)
-        modified_value = self.method(value, self.params['value'], self.params['exclude'], self.params['include'], {**file_info, **self.params['additional']})
+        modified_value = self.method(value, self.params['value'], self.params['exclude'], self.params['include'], self.params['validator'], {**file_info, **self.params['additional']})
         if modified_value is None:
             return None
         modified_value_hex = modified_value.hex()

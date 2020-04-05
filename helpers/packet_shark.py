@@ -18,7 +18,7 @@ class SharkPacket:
         self.tcp_segment_indexes = self.__get_tcp_segment_indexes(packet)
         self.tcp_segment_locations = self.__get_tcp_segments_location(packet)
         self.tcp_reassembled_data = self.__get_tcp_reassembled_data(packet)
-        self.tcp_payload_length = self.__get_tcp_payload_length(packet)
+        # self.tcp_payload_length = self.__get_tcp_payload_length(packet)
         self.tcp_retransmission = self.__get_tcp_retransmission(packet)
         self.tcp_lost = self.__get_tcp_lost(packet)
         self.tcp_stream = self.__get_tcp_stream(packet)
@@ -34,12 +34,12 @@ class SharkPacket:
         self.unknown_tcp = self.tcp_payload_field is not None and self.last_protocol_parsed
 
         if self.is_tcp:
-            print(self.index, 'has segment', self.tcp_has_segment)
-            print(self.index, 'last protocol parsed', self.last_protocol_parsed)
-            print(self.index, 'segments clear length', self.tcp_segment_clear_length)
+            # print(self.index, 'has segment', self.tcp_has_segment)
+            # print(self.index, 'last protocol parsed', self.last_protocol_parsed)
+            # print(self.index, 'segments clear length', self.tcp_segment_clear_length)
             # TODO: comment and do better
             if self.tcp_segment_field:
-                print(self.index, self.tcp_segment_clear_length)
+                # print(self.index, self.tcp_segment_clear_length)
                 self.tcp_segment_field.length = self.tcp_segment_clear_length
 
         # print(self.tcp_stream)
@@ -143,7 +143,7 @@ class SharkPacket:
         if self.is_tcp:
             tcp_payload_fields = self.__get_packet_fields(packet, ['tcp', 'payload_raw'], allow_wildcard=False)
             if tcp_payload_fields is not None:
-                print(tcp_payload_fields, self.index)
+                # print(tcp_payload_fields, self.index)
                 return tcp_payload_fields[0]
             return None
         return None
@@ -217,10 +217,10 @@ class SharkPacket:
 
     def __find_nested_field(self, field, prefix_path, remaining_path, json_path, wild_card_used) -> Union[List[PacketField], None]:
         field_prefix = prefix_path
-        print("FIELD PREFIX", field_prefix, remaining_path)
+        # print("FIELD PREFIX", field_prefix, remaining_path)
         for i, path in enumerate(remaining_path):
             if type(field) is str:
-                print('String field', field, remaining_path)
+                # print('String field', field, remaining_path)
                 return None
             if type(field) is int:
                 return None
@@ -238,7 +238,7 @@ class SharkPacket:
                     return None
                 return found_fields
             prefixed_field_path = f'{field_prefix}.{path}'
-            print('prefixed', prefixed_field_path)
+            # print('prefixed', prefixed_field_path)
             prefixed_full_field_path = f'{field_prefix}.{".".join(remaining_path[i:])}'
             if prefixed_full_field_path in field:
                 if type(field[prefixed_full_field_path]) is list:

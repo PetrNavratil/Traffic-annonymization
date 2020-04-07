@@ -217,7 +217,7 @@ class SharkPacket:
 
     def __find_nested_field(self, field, prefix_path, remaining_path, json_path, wild_card_used) -> Union[List[PacketField], None]:
         field_prefix = prefix_path
-        # print("FIELD PREFIX", field_prefix, remaining_path)
+        # print("FIELD PREFIX", field_prefix, remaining_path, field)
         for i, path in enumerate(remaining_path):
             if type(field) is str:
                 # print('String field', field, remaining_path)
@@ -254,7 +254,14 @@ class SharkPacket:
                     return [PacketField(field[prefixed_full_field_path], prefixed_full_field_path, json_path)]
                 # it has to be list with field info
                 return None
-            if prefixed_field_path not in field:
+            # validate that you can continue in path
+            # can be in the middle of path but matching
+            # final path would match above
+            if prefixed_field_path in field and (type(field[prefixed_field_path]) in [list, dict]):
+                field = field[prefixed_field_path]
+                field_prefix = prefixed_field_path
+                json_path.append(field_prefix)
+            else:
                 if not wild_card_used:
                     found_fields = []
                     for k, f in field.items():
@@ -272,9 +279,6 @@ class SharkPacket:
                         return None
                     return found_fields
                 return None
-            field = field[prefixed_field_path]
-            field_prefix = prefixed_field_path
-            json_path.append(field_prefix)
         return None
 
     # def __find_nested_field(self, field, prefix_path, remaining_path, json_path, wild_card_used) -> Union[List[PacketField], None]:

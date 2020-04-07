@@ -1,4 +1,5 @@
 from helpers.pool import SharedPool
+from interfaces.modifier import Modifier
 
 
 class Rule:
@@ -12,26 +13,28 @@ class Rule:
         'additional': {}
     }
 
-    def __init__(self, field, params, method, pool, logger, order):
+    def __init__(self, field, params, method: Modifier, pool, logger, order):
         self.appearance = 0
         self.field = field
         self.field_path = self.parse_rule_path(field)
-        self.field_path_for_shark = self.field_path[(len(self.field_path) -2):]
         self.params = self.validate_params(params)
         self.method = method
         self.pool = pool
         self.logger = logger
         self.order = order
+        self.method.transform_exclude_include(self.params['exclude'], self.params['include'], self.params['additional'])
 
     def run_rule(self, value: bytearray, file_info):
-        hex_value = value.hex()
         self.appearance += 1
+        if not self.method.validate_field(value, {**file_info, **self.params['additional']}):
+            return None
+        hex_value = value.hex()
         stored_value = self.pool.get_value(hex_value)
         if stored_value is not None:
             # print("FOUND")
             self.logger.log(self.field, hex_value, stored_value)
             return bytearray().fromhex(stored_value)
-        modified_value = self.method(value, self.params['value'], self.params['exclude'], self.params['include'], self.params['validator'], {**file_info, **self.params['additional']})
+        modified_value = self.method.modify_field(value, self.params['value'], {**file_info, **self.params['additional']})
         if modified_value is None:
             return None
         modified_value_hex = modified_value.hex()

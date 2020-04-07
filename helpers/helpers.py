@@ -1,21 +1,18 @@
 import random
+import re
 import socket
 import sys
 from collections import namedtuple
 from importlib import import_module
 from typing import Tuple, Union, List
 
-from netaddr import IPNetwork
-from scapy.utils import mac2str
 
 from helpers.ip_class import IpClass
-from interfaces.ether_modifier import EtherModifier
-from interfaces.ip_modifier import IPModifier
-from logger.logger import Logger
 
 from lorem.text import TextLorem
 
-HTML_LINE_PREFIX_DELIMITER = ': '
+HTTP_LINE_PREFIX_DELIMITER = ': '
+MAC_FLAGS_INDEX = 0
 
 Timestamp = namedtuple('Timestamp', ['seconds', 'decimal'])
 LengthValue = namedtuple('LengthValue', ['length', 'value'])
@@ -38,8 +35,47 @@ def load_modifier_class(class_name: str):
         sys.exit(1)
 
 
-def string_mac_to_bytes(string_mac):
-    return mac2str(string_mac)
+def string_mac_to_byte_array(string_mac: str) -> bytearray:
+    return bytearray().fromhex(''.join(string_mac.split(':')))
+
+
+def byte_array_mac_to_string(value: bytearray) -> str:
+    return ':'.join(format(b, '02x') for b in value)
+
+
+def string_mac_to_int(string_mac: str) -> int:
+    return int().from_bytes(string_mac_to_byte_array(string_mac), 'big')
+
+
+def generate_random_mac() -> bytearray:
+    return int_to_byte_array(generate_random_bits(48), 6)
+
+
+def generate_random_mac_preserve_flags(original_value: bytearray) -> bytearray:
+    random_mac = generate_random_mac()
+    original_flags_mask = generate_n_bit_mask(8, 2, prefix=False)
+    generated_flags_mask = generate_n_bit_mask(8, 6, prefix=True)
+    print(f'original {original_flags_mask:b}')
+    print(f'generated {generated_flags_mask:b}')
+    print(f'original value {original_value[MAC_FLAGS_INDEX]:b}')
+    print(f'original value {(original_value[MAC_FLAGS_INDEX] & original_flags_mask):b}')
+    print(f'generated value {(random_mac[MAC_FLAGS_INDEX]):b}')
+    print(f'generated value {(random_mac[MAC_FLAGS_INDEX] & generated_flags_mask):b}')
+    masked_flag_byte = original_value[MAC_FLAGS_INDEX] & original_flags_mask
+    random_mac[MAC_FLAGS_INDEX] &= generated_flags_mask
+    print(f'meh {random_mac[MAC_FLAGS_INDEX]:b}')
+    random_mac[MAC_FLAGS_INDEX] |= original_value[MAC_FLAGS_INDEX] & original_flags_mask
+    print(f'result {random_mac[MAC_FLAGS_INDEX]:b}')
+    return random_mac
+
+
+def generate_random_k_prefixed_or_suffixed_mac(value: bytearray, length: int, prefix: bool) -> bytearray:
+    return generate_random_k_prefixed_or_suffixed(value, length, prefix, 48)
+
+
+def generate_marked_k_prefixed_or_suffixed_mac(value: bytearray, length: int, marker, prefix: bool) -> bytearray:
+    transformed_marker = string_mac_to_int(marker)
+    return generate_marked_k_prefixed_or_suffixed(value, length, transformed_marker, prefix, 48)
 
 
 def validate_string_field(value: str, original_length, suffix=None, prefix=None):
@@ -152,10 +188,22 @@ def string_split_prefix(text, delimiter) -> Tuple[str, str]:
     return head+sep, tail
 
 
-def generate_prefixed_random_text(text, delimiter) -> str:
+def generate_prefixed_random_text(text, delimiter=None) -> str:
+    if delimiter is None:
+        return generate_random_text(len(text))
     prefix, rest = string_split_prefix(text, delimiter)
     value = generate_random_text(len(rest))
     return prefix + value
+
+
+def generate_prefixed_marker_text(original_text, marker,  delimiter=None, prefix_length=None) -> str:
+    modified_value = original_text if type(original_text) is str else byte_array_to_string(original_text)
+    if delimiter is None:
+        return marker
+    elif prefix_length is not None:
+        return modified_value[:prefix_length] + marker[:len(modified_value) - prefix_length]
+    prefix, rest = string_split_prefix(modified_value, delimiter)
+    return prefix + marker[:len(rest)]
 
 
 def clear_byte_array(value: bytearray, start: int, end: int) -> bytearray:
@@ -199,13 +247,12 @@ def clear_byte_bits_suffix(value: bytearray, length: int) -> bytearray:
     return clear_byte_bits(value, 8 - length, 8)
 
 
-def ip_bytes_to_int(value: bytearray) -> int:
-    # IP is always in big endien (network order)
-    return int().from_bytes(value, 'big')
+def byte_array_to_int(value: bytearray, order='big') -> int:
+    return int().from_bytes(value, order)
 
 
-def ip_int_to_bytes(value: int) -> bytearray:
-    return bytearray(value.to_bytes(4, 'big'))
+def int_to_byte_array(value: int, length, order='big') -> bytearray:
+    return bytearray(value.to_bytes(length, order))
 
 
 def get_ip_class_range(first_octet: int):
@@ -278,44 +325,60 @@ def string_ip_to_byte_array(ip: str) -> bytearray:
     return bytearray(socket.inet_aton(ip))
 
 
+def random_ip_address() -> bytearray:
+    random_bits: int = generate_random_bits(32)
+    return bytearray(random_bits.to_bytes(4, 'big'))
+
+
 def byte_array_ip_to_string(ip: bytearray) -> str:
     return socket.inet_ntoa(ip)
 
 
-def generate_32bit_mask(length: int, prefix: bool):
+def generate_n_bit_mask(length: int, mask_length: int, prefix: bool) -> int:
     if length == 0:
         return 0
-    bit_mask = ''.join(['1' for _ in range(length)])
+    bit_mask = ''.join(['1' for _ in range(mask_length)])
     if prefix:
-        return int(bit_mask.ljust(32, '0'), base=2)
+        return int(bit_mask.ljust(length, '0'), base=2)
     else:
         return int(bit_mask, base=2)
 
 
-def generate_random_k_prefixed_or_suffixed_ip(value: bytearray, length: int, prefix: bool) -> bytearray:
-    ip = ip_bytes_to_int(value)
+def generate_32bit_mask(length: int, prefix: bool):
+    return generate_n_bit_mask(32, length, prefix)
+
+
+def generate_random_k_prefixed_or_suffixed(value: bytearray, length: int, prefix: bool, bit_length: int, order='big') -> bytearray:
+    value_int = byte_array_to_int(value, order)
     if prefix:
-        random_bits = generate_random_bits(32 - length)
-        mask = generate_32bit_mask(length, True)
-        return ip_int_to_bytes((ip & mask) | random_bits)
+        random_bits = generate_random_bits(bit_length - length)
+        mask = generate_n_bit_mask(bit_length,length, True)
+        return int_to_byte_array((value_int & mask) | random_bits, len(value), order)
     else:
-        random_bits = generate_random_bits(32)
-        mask = generate_32bit_mask(32 - length, True)
-        ip_mask = generate_32bit_mask(length, False)
-        return ip_int_to_bytes((random_bits & mask) | (ip & ip_mask))
+        random_bits = generate_random_bits(bit_length)
+        mask = generate_n_bit_mask(bit_length, bit_length - length, True)
+        value_int_mask = generate_n_bit_mask(bit_length, length, False)
+        return int_to_byte_array((random_bits & mask) | (value_int & value_int_mask), len(value), order)
+
+
+def generate_random_k_prefixed_or_suffixed_ip(value: bytearray, length: int, prefix: bool ) -> bytearray:
+    return generate_random_k_prefixed_or_suffixed(value, length, prefix, 32)
+
+
+def generate_marked_k_prefixed_or_suffixed(value: bytearray, length: int, marker, prefix: bool, bit_length: int, order='big') -> bytearray:
+    ip = byte_array_to_int(value, order)
+    assert bit_length - length >= marker.bit_length(), "Marker length is larger than preserving length"
+    if prefix:
+        mask = generate_n_bit_mask(bit_length, length, True)
+        return int_to_byte_array((ip & mask) | marker, len(value), order)
+    else:
+        ip_mask = generate_n_bit_mask(bit_length, length, False)
+        return int_to_byte_array((marker << (bit_length - max(length, marker.bit_length()))) | (ip & ip_mask), len(value), order)
 
 
 def generate_marked_k_prefixed_or_suffixed_ip(value: bytearray, length: int, marker, prefix: bool) -> bytearray:
-    ip = ip_bytes_to_int(value)
     transformed_marker = parse_partial_ip(marker)
-    assert 32 - length >= transformed_marker.bit_length(), "Marker length is larger than preserving length"
-    if prefix:
-        mask = generate_32bit_mask(length, True)
-        print(f'mask {mask:b}')
-        return ip_int_to_bytes((ip & mask) | transformed_marker)
-    else:
-        ip_mask = generate_32bit_mask(length, False)
-        return ip_int_to_bytes((transformed_marker << length) | (ip & ip_mask))
+    return generate_marked_k_prefixed_or_suffixed(value, length, transformed_marker, prefix, 32)
 
 
 def parse_partial_ip(value) -> int:
@@ -341,3 +404,14 @@ def random_port_from_its_category(port) -> bytearray:
     transformed_port = port if type(port) is int else byte_array_to_number(port)
     port_range = get_port_range(transformed_port)
     return number_to_byte_array(generate_random_number_in_range(port_range), 2)
+
+
+def camel_case_to_snake_case(path: str) -> str:
+    # source
+    # https://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-snake-case
+    name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', path)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', name).lower()
+
+
+def modifier_class_name(name: str) -> str:
+    return f'{camel_case_to_snake_case(name)}.{name}'

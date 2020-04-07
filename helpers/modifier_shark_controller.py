@@ -2,8 +2,10 @@ import json
 import sys
 from typing import List, Dict, Union
 
+from jsonslicer import JsonSlicer
+
 from helpers.basic_modifier import BasicModifier
-from helpers.helpers import load_modifier_class
+from helpers.helpers import load_modifier_class, modifier_class_name
 from helpers.modification import FieldModification
 from helpers.packet_field import PacketField
 from helpers.packet_modification import PacketModification
@@ -197,15 +199,15 @@ class ModifierSharkController:
                 self.pools[pool_key] = SharedPool(field)
             class_name = rule['class'] if 'class' in rule else None
             modifier = self.__get_modifier(class_name, pool_key, rule['method'])
-            method = self.__get_method(modifier['instance'], rule['method'], field)
+            # method = self.__get_method(modifier['instance'], rule['method'], field)
             parsed_rules.append(
-                Rule(field, rule["params"], method, self.pools[pool_key], self.logger, i)
+                Rule(field, rule["params"], modifier['instance'], self.pools[pool_key], self.logger, i)
             )
         return parsed_rules
 
     def __get_modifier(self, class_name: Union[str, None], group_name: str, method: str):
         if group_name not in self.custom_classes:
-            class_instance = BasicModifier() if class_name is None else load_modifier_class(class_name)()
+            class_instance = load_modifier_class(modifier_class_name(method))()
             self.custom_classes[group_name] = {
                 'class_name': class_name,
                 'instance': class_instance,
@@ -213,7 +215,7 @@ class ModifierSharkController:
             }
         else:
             class_info = self.custom_classes[group_name]
-            assert class_name == class_info['class_name'] and method == class_info['method'] == method, f"Class name and method must match for shared `value_group`, {group_name}"
+            assert class_name == class_info['class_name'], f"Class name and method must match for shared `value_group`, {group_name}"
         return self.custom_classes[group_name]
 
     def unused_rules(self):

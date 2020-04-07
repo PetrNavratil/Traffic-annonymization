@@ -4,14 +4,14 @@ reset_pools: true
 generate_meta_files: false
 wildcard_count: 1
 files:
-  - "dhcp.pcap"
+#  - "dhcp.pcap"
 #  - "../dataset/single_pcaps/tunel/icmp_in_l2tpv3.pcap"
 #  - "../dataset/single_pcaps/tunel/icmp_in_l2tpv3.pcap"
 #  - "../dataset/single_pcaps/tunel/who.pcap"
 #  - "../dataset/single_pcaps/dns.pcap"
 #  - "../dataset/single_pcaps/dns2.pcap"
 #  - "../dataset/single_pcaps/ssdp.pcap"
-#  - "../dataset/single_pcaps/http/test.pcap"
+  - "../dataset/single_pcaps/http/test.pcap"
 #  - "tcp_tls_ignored_record.pcap"
 #  - "tcp_retransmission.pcap"
 #  - "tcp_missing_middle_segment.pcap"
@@ -28,7 +28,7 @@ files:
 #  - "seg.pcap"
 #  - "../dataset/single_pcaps/multiple_records.pcap"
 #  - "../dataset/single_pcaps/the_biggest.pcap"
-#  - "../dataset/single_pcaps/bbig.pcap"
+  - "../dataset/single_pcaps/bbig.pcap"
 #  - "../dataset/single_pcaps/who_knows.pcap"
 #  - "../dataset/single_pcaps/huh.pcap"
 #  - "../dataset/single_pcaps/http/http.pcap"
@@ -36,38 +36,69 @@ files:
 #  - "../dataset/single_pcaps/http/segmented_html.pcap"
 rules:
   -
-      field: dns.qry.name
-      method: dns_query_name_marker
+      field: http.accept
+      method: HttpTextRandomPreservePrefix
       params:
-          value: 'pn.yoloswagger.com'
-          exclude: ['windowsupdate.microsoft.co']
-          include: ['windowsupdate.microsoft.com']
+          value: 'PN-'
+          exclude: []
+          include: ['Acc']
           additional:
+            validation: 'prefix'
+            mine: 'Hello'
+            you: 'doing'
+            packet: 3
+  -
+      field: ip.src
+      method: IPMarkerPreserveNPrefix
+      value_group: 'IP'
+      params:
+          value:
+            value: '255.255'
+            preserve: 16
+          exclude: []
+          include: []
+          additional:
+            validation: 'prefix'
+            mine: 'Hello'
+            you: 'doing'
+            packet: 3
+  -
+      field: ip.src
+      method: IPMarkerPreserveNPrefix
+      value_group: 'IP'
+      params:
+          value:
+            value: '255.255'
+            preserve: 16
+          exclude: []
+          include: []
+          additional:
+            validation: 'prefix'
             mine: 'Hello'
             you: 'doing'
             packet: 3
   -
       field: dhcp.type
-      method: default_number_marker
+      method: NumberMarker
       params:
           value: 20
-          exclude: [[1,1], [2,50]]
-          include: [2]
-          additional:
-            mine: 'Hello'
-            you: 'doing'
-            packet: 3
-  -
-      field: dns.a
-      method: ip_random
-      params:
-          value: 'pn.yoloswagger.ns.com'
           exclude: []
           include: []
           additional:
             mine: 'Hello'
             you: 'doing'
             packet: 3
+#  -
+#      field: dns.a
+#      method: ip_random
+#      params:
+#          value: 'pn.yoloswagger.ns.com'
+#          exclude: []
+#          include: []
+#          additional:
+#            mine: 'Hello'
+#            you: 'doing'
+#            packet: 3
 #  - field: dns.qry.type
 #    method: default_number_marker
 #    params:
@@ -78,17 +109,17 @@ rules:
 #        mine: 'Hello'
 #        you: 'doing'
 #        packet: 3
-#  -
-#      field: frame.time_epoch
-#      method: default_time_marker
-#      params:
-#          value: '0.400'
-#          exclude: []
-#          include: []
-#          additional:
-#            mine: 'Hello'
-#            you: 'doing'
-#            packet: 3
+  -
+      field: frame.time_epoch
+      method: FrameTimeMarkerIncrement
+      params:
+          value: '0.100000'
+          exclude: []
+          include: []
+          additional:
+            mine: 'Hello'
+            you: 'doing'
+            packet: 3
 #  -
 #      field: frame.time_epoch
 #      method: time_stamp_clear_and_increment
@@ -114,16 +145,16 @@ rules:
 #          value: ''
 #          exclude: []
 #          include: []
-  -
-      field: http.request.line
-#      method: modify_field
-      method: http_random_text_preserve_prefix
-#      method: default_http_marker_preserve_prefix
-#      class: custom_xml_modifier.CustomXMLModifier
-      params:
-          value: 'PN EVERYWHERE'
-          exclude: []
-          include: []
+#  -
+#      field: http.request.line
+##      method: modify_field
+#      method: http_random_text_preserve_prefix
+##      method: default_http_marker_preserve_prefix
+##      class: custom_xml_modifier.CustomXMLModifier
+#      params:
+#          value: 'PN EVERYWHERE'
+#          exclude: []
+#          include: []
 #  -
 #      field: ssdp.http.server
 #      method: http_random_text_preserve_prefix
@@ -139,13 +170,25 @@ rules:
 #          exclude: []
 #          include: []
 
-#  - field: eth.src
-#    method: do_not_modify
-#    value_group: 'ETH'
-#    params:
-#      value: "ff:ff:ff:ff:ff:ff"
-#      exclude: []
-#      include: []
+  - field: eth.src
+    method: MACRandomPreserveFlags
+    value_group: 'ETH'
+    params:
+      value: 'ff'
+      exclude: []
+      include: []
+      additional:
+        validation: 'suffix'
+
+  - field: eth.dst
+    method: MACRandomPreserveFlags
+    value_group: 'ETH'
+    params:
+      value: 'ff'
+      exclude: []
+      include: []
+      additional:
+        validation: 'suffix'
 #  -
 #      field: tls.handshake
 #      method: default_clear_all
@@ -162,18 +205,18 @@ rules:
 ##          include: []
   -
       field: http.host
-      method: default_http_marker
+      method: HttpTextMarker
       params:
           value: 'Host: PN mega dloooooooooohy texxt'
           exclude: []
           include: []
-  -
-      field: http.server
-      method: default_http_marker
-      params:
-          value: 'Server: CHANGE TEST'
-          exclude: []
-          include: []
+#  -
+#      field: http.server
+#      method: default_http_marker
+#      params:
+#          value: 'Server: CHANGE TEST'
+#          exclude: []
+#          include: []
 #  -
 #      field: tls.record.version
 #      method: default_number_marker
@@ -195,14 +238,14 @@ rules:
 #          value: '255.255.255.255'
 #          exclude: []
 #          include: []
-  -
-      field: arp.dst.hw_mac
-      method: eth_marker
-      value_group: 'ETH'
-      params:
-          value: "ff:ff:ff:ff:ff:ff"
-          exclude: []
-          include: []
+#  -
+#      field: arp.dst.hw_mac
+#      method: eth_marker
+#      value_group: 'ETH'
+#      params:
+#          value: "ff:ff:ff:ff:ff:ff"
+#          exclude: []
+#          include: []
 #  -
 #      field: dhcp.hw.mac_addr
 #      method: eth_marker
@@ -211,34 +254,42 @@ rules:
 #          value: "ff:ff:ff:ff:ff:ff"
 #          exclude: []
 #          include: []
-  -
-      field: eth.src
-      method: eth_marker
-      value_group: 'KVAK'
-      params:
-          value: "ff:ff:ff:ff:ff:ff"
-          exclude: []
-          include: []
-  -
-      field: ip.src
-      method: ip_marker_preserve_n_suffix
-      value_group: 'IP'
-      params:
-        value:
-          value: '255.255'
-          preserve_length: 16
-        exclude: []
-        include: []
-  -
-      field: ip.dst
-      method: ip_marker_preserve_n_suffix
-      value_group: 'IP'
-      params:
-        value:
-          value: '255.255'
-          preserve_length: 16
-        exclude: []
-        include: []
+#  -
+#      field: eth.src
+#      method: eth_marker
+#      value_group: 'KVAK'
+#      params:
+#          value: "ff:ff:ff:ff:ff:ff"
+#          exclude: []
+#          include: []
+#  -
+#      field: ip.src
+#      method: ip_marker_preserve_n_suffix
+#      value_group: 'IP'
+#      params:
+#        value:
+#          value: '255.255'
+#          preserve_length: 16
+#        exclude: []
+#        include: []
+#  -
+#      field: ip.src
+#      method: IPMarker
+#      value_group: 'IP'
+#      params:
+#        value: '244.244.244.244'
+#        exclude: ['192.168.0.0']
+#        include: ['192.168.0.0/16']
+#  -
+#      field: ip.dst
+#      method: ip_marker_preserve_n_suffix
+#      value_group: 'IP'
+#      params:
+#        value:
+#          value: '255.255'
+#          preserve_length: 16
+#        exclude: []
+#        include: []
 #  -
 #      field: udp.srcport
 #      method: port_random_preserve_group
@@ -253,14 +304,14 @@ rules:
 #        value: 8
 #        exclude: []
 #        include: []
-  -
-      field: ip.dst
-      method: ip_marker
-      value_group: 'IP2'
-      params:
-        value: '255.255.255.255'
-        exclude: ['192.168.0.10/16']
-        include: ['192.168.0.10/16']
+#  -
+#      field: ip.dst
+#      method: ip_marker
+#      value_group: 'IP2'
+#      params:
+#        value: '255.255.255.255'
+#        exclude: ['192.168.0.10/16']
+#        include: ['192.168.0.10/16']
 #      field: ip.dst
 #      method: ip_random_preserve_class
 #      value_group: 'IP2'

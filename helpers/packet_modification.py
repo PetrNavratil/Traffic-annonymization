@@ -6,7 +6,7 @@ from helpers.modification import FieldModification
 
 class PacketModification:
 
-    BEFORE_TCP_PAYLOAD = ['eth', 'ip', 'tcp']
+    BEFORE_TCP_PAYLOAD = ['frame', 'eth', 'ip', 'tcp']
 
     def __init__(self, packet_index, packet_start, packet_length, tcp_payload_field, last_protocol_parsed, has_tcp_segment, tcp_segment_field):
         self.packet_index = packet_index

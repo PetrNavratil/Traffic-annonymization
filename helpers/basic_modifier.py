@@ -141,10 +141,10 @@ class BasicModifier:
     #         return generate_marked_k_prefixed_or_suffixed_ip(ip, value['preserve_length'], value['value'], prefix=True)
     #     return None
 
-    # def ip_marker_preserve_n_suffix(self, ip, value, exclude, include, validator, additional_parameters):
-    #     if Validator.validate_ip(ip, exclude, include):
-    #         return generate_marked_k_prefixed_or_suffixed_ip(ip, value['preserve_length'], value['value'], prefix=False)
-    #     return None
+    def ip_marker_preserve_n_suffix(self, ip, value, exclude, include, validator, additional_parameters):
+        if Validator.validate_ip(ip, exclude, include):
+            return generate_marked_k_prefixed_or_suffixed_ip(ip, value['preserve_length'], value['value'], prefix=False)
+        return None
 
     # def port_random_preserve_group(self, port, value, exclude, include, validator, additional_parameters):
     #     if Validator.validate_value_int_in(port, exclude, include):

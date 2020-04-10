@@ -13,7 +13,7 @@ class IPMarker(Modifier):
         return string_ip_to_byte_array(value)
 
     def validate_field(self, value,  additional_arguments) -> bool:
-        return Validator.validate_ip(value, self.exclude, self.include)
+        return Validator.validate_ip(value, self.exclude.value, self.include.value)
 
     def transform_exclude_include_method(self, additional_params):
         return Validator.ip_network_convert, {}

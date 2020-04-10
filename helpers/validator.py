@@ -1,15 +1,13 @@
-from socket import socket
-
 from netaddr import IPNetwork
 
 from helpers.helpers import byte_array_ip_to_string, byte_array_to_number, byte_array_to_string, \
-    byte_array_mac_to_string
+    byte_array_mac_to_string, ExcludeInclude
 
 
 class Validator:
 
     @staticmethod
-    def convert_options(options, fn, **kwargs):
+    def convert_options(options, fn, kwargs):
         print(kwargs)
         if fn:
             return [fn(item, **kwargs) for item in options]
@@ -28,43 +26,42 @@ class Validator:
         return True
 
     @staticmethod
-    def validate_field_prefix(value: str, exclude, include) -> bool:
-        for item in exclude:
+    def validate_in(value, options) -> bool:
+        return value in options
+
+    @staticmethod
+    def validate_prefix(value, options) -> bool:
+        for item in options:
             if value.startswith(item):
-                return False
-        if include:
-            for item in include:
-                if value.startswith(item):
-                    return True
-            return False
-        return True
+                return True
+        return False
 
     @staticmethod
-    def validate_field_suffix(value: str, exclude, include) -> bool:
-        for item in exclude:
+    def validate_suffix(value, options) -> bool:
+        for item in options:
             if value.endswith(item):
+                return True
+        return False
+
+
+    @staticmethod
+    def validate_string_field(value: str, options: ExcludeInclude) -> bool:
+        if options.validation == 'prefix':
+            return Validator.validate_prefix(value, options.value)
+        if options.validation == 'suffix':
+            return Validator.validate_suffix(value, options.value)
+        return Validator.validate_in(value, options.value)
+
+    @staticmethod
+    def validate_string(value, exclude: ExcludeInclude, include: ExcludeInclude, **kwargs) -> bool:
+        modified_value = value if type(value) is str else byte_array_to_string(value)
+        if exclude.value:
+            if Validator.validate_string_field(modified_value, exclude):
                 return False
-        if include:
-            for item in include:
-                if value.endswith(item):
-                    return True
-            return False
+        if include.value:
+            return Validator.validate_string_field(modified_value, include)
         return True
 
-    @staticmethod
-    def validate_value_string_suffix(value, exclude, include, **kwargs) -> bool:
-        modified_value = value if type(value) is str else byte_array_to_string(value)
-        return Validator.validate_field_suffix(modified_value, exclude, include)
-
-    @staticmethod
-    def validate_value_string_prefix(value, exclude, include, **kwargs) -> bool:
-        modified_value = value if type(value) is str else byte_array_to_string(value)
-        return Validator.validate_field_prefix(modified_value, exclude, include)
-
-    @staticmethod
-    def validate_value_string_in(value, exclude, include, **kwargs) -> bool:
-        modified_value = value if type(value) is str else byte_array_to_string(value)
-        return Validator.validate_field_in(modified_value, exclude, include)
 
     @staticmethod
     def validate_value_int_in(value, exclude, include, **kwargs) -> bool:
@@ -72,20 +69,14 @@ class Validator:
         return Validator.validate_field_in(modified_value, exclude, include)
 
     @staticmethod
-    def validate_value_mac_in(value, exclude, include, **kwargs) -> bool:
+    def validate_mac(value, exclude: ExcludeInclude, include: ExcludeInclude, **kwargs) -> bool:
         modified_value = value if type(value) is str else byte_array_mac_to_string(value)
-        return Validator.validate_field_in(modified_value, exclude, include)
-
-    @staticmethod
-    def validate_value_mac_suffix(value, exclude, include, **kwargs) -> bool:
-        modified_value = value if type(value) is str else byte_array_mac_to_string(value)
-        return Validator.validate_field_suffix(modified_value, exclude, include)
-
-    @staticmethod
-    def validate_value_mac_prefix(value, exclude, include, **kwargs) -> bool:
-        modified_value = value if type(value) is str else byte_array_mac_to_string(value)
-        return Validator.validate_field_prefix(modified_value, exclude, include)
-
+        if exclude.value:
+            if Validator.validate_string_field(modified_value, exclude):
+                return False
+        if include.value:
+            return Validator.validate_string_field(modified_value, include)
+        return True
 
     @staticmethod
     def convert_range(value, base=10):
@@ -95,10 +86,6 @@ class Validator:
             return range(start, end + 1)
         converted_value = Validator.convert_number(value, base)
         return range(converted_value, converted_value + 1)
-
-    @staticmethod
-    def convert_number_ranges(value, **kwargs):
-        return Validator.convert_options(value, Validator.convert_range, **kwargs)
 
     @staticmethod
     def convert_number(value, base=10):
@@ -111,19 +98,9 @@ class Validator:
         return IPNetwork(value)
 
     @staticmethod
-    def convert_ip_ranges(value, **kwargs):
-        return Validator.convert_options(value, Validator.ip_network_convert, **kwargs)
-
-    @staticmethod
     def validate_ip(value, exclude, include, **kwargs) -> bool:
         modified_value = value if type(value) is str else byte_array_ip_to_string(value)
         return Validator.validate_field_in(modified_value, exclude, include)
-
-    @staticmethod
-    def validate_mac(value, exclude, include, **kwargs) -> bool:
-        modified_value = value if type(value) is str else byte_array_mac_to_string(value)
-        return Validator.validate_field_in(modified_value, exclude, include)
-
 
     @staticmethod
     def no_transform(value, **kwargs):

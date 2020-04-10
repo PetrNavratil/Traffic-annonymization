@@ -16,6 +16,7 @@ MAC_FLAGS_INDEX = 0
 
 Timestamp = namedtuple('Timestamp', ['seconds', 'decimal'])
 LengthValue = namedtuple('LengthValue', ['length', 'value'])
+ExcludeInclude = namedtuple('ExcludeInclude', ['value', 'validation'])
 MICROSECONDS_MAX = 1000000
 NANOSECONDS_MAX = 1000000000
 WELL_KNOWN_PORTS = range(0, 1024)

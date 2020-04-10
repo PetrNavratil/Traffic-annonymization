@@ -1,13 +1,9 @@
 from helpers.helpers import number_to_byte_array
 from helpers.validator import Validator
-from modifiers.number_random import NumberRandom
+from interfaces.modifier import Modifier
 
 
-class NumberMarker(NumberRandom):
-
-    def __init__(self):
-        super().__init__()
-        self.unique = False
+class NumberRandom(Modifier):
 
     def modify_field(self, original_value, value, additional_parameters) -> bytearray:
         return number_to_byte_array(int(value), len(original_value))

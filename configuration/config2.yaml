@@ -11,7 +11,7 @@ files:
 #  - "../dataset/single_pcaps/dns.pcap"
 #  - "../dataset/single_pcaps/dns2.pcap"
 #  - "../dataset/single_pcaps/ssdp.pcap"
-  - "../dataset/single_pcaps/http/test.pcap"
+#  - "../dataset/single_pcaps/http/test.pcap"
 #  - "tcp_tls_ignored_record.pcap"
 #  - "tcp_retransmission.pcap"
 #  - "tcp_missing_middle_segment.pcap"
@@ -28,25 +28,24 @@ files:
 #  - "seg.pcap"
 #  - "../dataset/single_pcaps/multiple_records.pcap"
 #  - "../dataset/single_pcaps/the_biggest.pcap"
-  - "../dataset/single_pcaps/bbig.pcap"
+#  - "../dataset/single_pcaps/bbig.pcap"
 #  - "../dataset/single_pcaps/who_knows.pcap"
 #  - "../dataset/single_pcaps/huh.pcap"
-#  - "../dataset/single_pcaps/http/http.pcap"
+  - "../dataset/single_pcaps/http/http.pcap"
 #  - "../dataset/single_pcaps/http/http-chunked-gzip.pcap"
 #  - "../dataset/single_pcaps/http/segmented_html.pcap"
 rules:
   -
-      field: http.accept
-      method: HttpTextRandomPreservePrefix
+      field: http.host
+      method: HttpTextMarkerPreservePrefix
       params:
-          value: 'PN-'
-          exclude: []
-          include: ['Acc']
+          value: 'PN'
+          exclude:
+            value: ['Host: www']
+            validation: 'suffix'
+          include: []
           additional:
-            validation: 'prefix'
-            mine: 'Hello'
-            you: 'doing'
-            packet: 3
+            validation: 'suffix'
   -
       field: ip.src
       method: IPMarkerPreserveNPrefix
@@ -185,7 +184,9 @@ rules:
     value_group: 'ETH'
     params:
       value: 'ff'
-      exclude: []
+      exclude:
+        value: ['00']
+        validation: 'prefix'
       include: []
       additional:
         validation: 'suffix'
@@ -203,13 +204,13 @@ rules:
 ##          value: '8'
 ##          exclude: []
 ##          include: []
-  -
-      field: http.host
-      method: HttpTextMarker
-      params:
-          value: 'Host: PN mega dloooooooooohy texxt'
-          exclude: []
-          include: []
+#  -
+#      field: http.host
+#      method: HttpTextMarker
+#      params:
+#          value: 'Host: PN mega dloooooooooohy texxt'
+#          exclude: []
+#          include: []
 #  -
 #      field: http.server
 #      method: default_http_marker

@@ -13,7 +13,7 @@ class Rule:
         'additional': {}
     }
 
-    def __init__(self, field, params, method: Modifier, pool, logger, order):
+    def __init__(self, field, params, method: Modifier, pool: SharedPool, logger, order):
         self.appearance = 0
         self.field = field
         self.field_path = self.parse_rule_path(field)
@@ -33,13 +33,19 @@ class Rule:
         if stored_value is not None:
             # print("FOUND")
             self.logger.log(self.field, hex_value, stored_value)
-            return bytearray().fromhex(stored_value)
-        modified_value = self.method.modify_field(value, self.params['value'], {**file_info, **self.params['additional']})
-        if modified_value is None:
-            return None
+            # TODO: validate, might cause problems as its not immutable
+            return stored_value
+        while True:
+            modified_value = self.method.modify_field(value, self.params['value'], {**file_info, **self.params['additional']})
+            if modified_value is None:
+                return None
+            if self.method.unique and self.pool.is_used(modified_value):
+                continue
+            else:
+                break
         modified_value_hex = modified_value.hex()
         self.logger.log(self.field, hex_value, modified_value_hex)
-        self.pool.set_value(hex_value, modified_value_hex)
+        self.pool.set_value(hex_value, modified_value)
         return modified_value
 
     def validate_params(self, params):

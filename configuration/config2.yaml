@@ -4,7 +4,7 @@ reset_pools: true
 generate_meta_files: false
 wildcard_count: 1
 files:
-#  - "dhcp.pcap"
+  - "dhcp.pcap"
 #  - "../dataset/single_pcaps/tunel/icmp_in_l2tpv3.pcap"
 #  - "../dataset/single_pcaps/tunel/icmp_in_l2tpv3.pcap"
 #  - "../dataset/single_pcaps/tunel/who.pcap"
@@ -31,21 +31,21 @@ files:
 #  - "../dataset/single_pcaps/bbig.pcap"
 #  - "../dataset/single_pcaps/who_knows.pcap"
 #  - "../dataset/single_pcaps/huh.pcap"
-  - "../dataset/single_pcaps/http/http.pcap"
+#  - "../dataset/single_pcaps/http/http.pcap"
 #  - "../dataset/single_pcaps/http/http-chunked-gzip.pcap"
 #  - "../dataset/single_pcaps/http/segmented_html.pcap"
 rules:
   -
       field: http.host
-      method: HttpTextMarkerPreservePrefix
+      method: HttpClearAll
       params:
-          value: 'PN'
+          value: 'Unknown'
           exclude:
-            value: ['Host: www']
-            validation: 'suffix'
+            value: ['Host: www.known.com']
+            validation: 'prefix'
           include: []
           additional:
-            validation: 'suffix'
+            foo: 'bar'
   -
       field: ip.src
       method: IPMarkerPreserveNPrefix
@@ -77,10 +77,10 @@ rules:
             you: 'doing'
             packet: 3
   -
-      field: dhcp.type
-      method: NumberMarker
+      field: ip.src
+      method: IPMarker
       params:
-          value: 20
+          value: '255.255.255.255'
           exclude: []
           include: []
           additional:
@@ -184,9 +184,7 @@ rules:
     value_group: 'ETH'
     params:
       value: 'ff'
-      exclude:
-        value: ['00']
-        validation: 'prefix'
+      exclude: []
       include: []
       additional:
         validation: 'suffix'

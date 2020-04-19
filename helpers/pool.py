@@ -23,3 +23,6 @@ class SharedPool:
 
     def reset_pool(self):
         self.pool = {}
+
+    def is_used(self, value: bytearray) -> bool:
+        return value in self.pool.values()

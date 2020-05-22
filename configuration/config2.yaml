@@ -1,92 +1,53 @@
-verbose: false
 tcp_stream: 'clever'
 reset_pools: true
 generate_meta_files: false
-wildcard_count: 1
+search_all_protocols: false
 files:
-  - "dhcp.pcap"
-#  - "../dataset/single_pcaps/tunel/icmp_in_l2tpv3.pcap"
-#  - "../dataset/single_pcaps/tunel/icmp_in_l2tpv3.pcap"
-#  - "../dataset/single_pcaps/tunel/who.pcap"
-#  - "../dataset/single_pcaps/dns.pcap"
-#  - "../dataset/single_pcaps/dns2.pcap"
-#  - "../dataset/single_pcaps/ssdp.pcap"
-#  - "../dataset/single_pcaps/http/test.pcap"
-#  - "tcp_tls_ignored_record.pcap"
-#  - "tcp_retransmission.pcap"
-#  - "tcp_missing_middle_segment.pcap"
-#  - "segmented_tls_missing_last.pcap"
-#  - "segmented_tls.pcap"
-#  - "merged.pcap"
-#  - "tcp_middle.pcap"
-#  - "test.pcap"
-#  - "../dataset/single_pcaps/big_test.pcap"
-#  - "../dataset/single_pcaps/mega_segmented.pcap"
-#  - "../dataset/single_pcaps/mmega.pcap"
-#  - "weird_tls.pcap"
-#  - "segmented.pcap"
-#  - "seg.pcap"
-#  - "../dataset/single_pcaps/multiple_records.pcap"
-#  - "../dataset/single_pcaps/the_biggest.pcap"
-#  - "../dataset/single_pcaps/bbig.pcap"
-#  - "../dataset/single_pcaps/who_knows.pcap"
-#  - "../dataset/single_pcaps/huh.pcap"
-#  - "../dataset/single_pcaps/http/http.pcap"
-#  - "../dataset/single_pcaps/http/http-chunked-gzip.pcap"
-#  - "../dataset/single_pcaps/http/segmented_html.pcap"
+  - 'dhcp.pcap'
+#  - 'file2.pcap'
 rules:
   -
       field: http.host
-      method: HttpClearAll
-      params:
-          value: 'Unknown'
-          exclude:
-            value: ['Host: www.known.com']
-            validation: 'prefix'
-          include: []
-          additional:
-            foo: 'bar'
+      modifier: HttpTextRandom
+      exclude:
+        value: ['Host: www.foo.com']
+        validation: 'prefix'
+      include: []
+      additional:
+          foo: 'bar'
   -
-      field: ip.src
-      method: IPMarkerPreserveNPrefix
-      value_group: 'IP'
-      params:
-          value:
-            value: '255.255'
-            preserve: 16
-          exclude: []
-          include: []
-          additional:
-            validation: 'prefix'
-            mine: 'Hello'
-            you: 'doing'
-            packet: 3
-  -
-      field: ip.src
-      method: IPMarkerPreserveNPrefix
-      value_group: 'IP'
-      params:
-          value:
-            value: '255.255'
-            preserve: 16
-          exclude: []
-          include: []
-          additional:
-            validation: 'prefix'
-            mine: 'Hello'
-            you: 'doing'
-            packet: 3
-  -
-      field: ip.src
-      method: IPMarker
-      params:
-          value: '255.255.255.255'
-          exclude: []
-          include: []
-          additional:
-            mine: 'Hello'
-            you: 'doing'
-            packet: 3
+      field: udp.srcport
+      modifier: NumberMarker
+      value_group: 'src_port'
+      value: 123
+      include: [[0,1024], 8080]
+      exclude: []
+#  -
+#      field: ip.src
+#      method: IPMarkerPreserveNPrefix
+#      value_group: 'IP'
+#      params:
+#          value:
+#            value: '255.255'
+#            preserve: 16
+#          exclude: []
+#          include: []
+#          additional:
+#            validation: 'prefix'
+#            mine: 'Hello'
+#            you: 'doing'
+#            packet: 3
+#  -
+#      field: ip.src
+#      method: IPMarker
+#      params:
+#          value: '255.255.255.255'
+#          exclude: []
+#          include: []
+#          additional:
+#            mine: 'Hello'
+#            you: 'doing'
+#            packet: 3
 #  -
 #      field: dns.a
 #      method: ip_random
@@ -108,17 +69,17 @@ rules:
 #        mine: 'Hello'
 #        you: 'doing'
 #        packet: 3
-  -
-      field: frame.time_epoch
-      method: FrameTimeMarkerIncrement
-      params:
-          value: '0.100000'
-          exclude: []
-          include: []
-          additional:
-            mine: 'Hello'
-            you: 'doing'
-            packet: 3
+#  -
+#      field: frame.time_epoch
+#      method: FrameTimeMarkerIncrement
+#      params:
+#          value: '0.100000'
+#          exclude: []
+#          include: []
+#          additional:
+#            mine: 'Hello'
+#            you: 'doing'
+#            packet: 3
 #  -
 #      field: frame.time_epoch
 #      method: time_stamp_clear_and_increment
@@ -168,26 +129,26 @@ rules:
 #          value: '23'
 #          exclude: []
 #          include: []
-
-  - field: eth.src
-    method: MACRandomPreserveFlags
-    value_group: 'ETH'
-    params:
-      value: 'ff'
-      exclude: []
-      include: []
-      additional:
-        validation: 'suffix'
-
-  - field: eth.dst
-    method: MACRandomPreserveFlags
-    value_group: 'ETH'
-    params:
-      value: 'ff'
-      exclude: []
-      include: []
-      additional:
-        validation: 'suffix'
+#
+#  - field: eth.src
+#    method: MACRandomPreserveFlags
+#    value_group: 'ETH'
+#    params:
+#      value: 'ff'
+#      exclude: []
+#      include: []
+#      additional:
+#        validation: 'suffix'
+#
+#  - field: eth.dst
+#    method: MACRandomPreserveFlags
+#    value_group: 'ETH'
+#    params:
+#      value: 'ff'
+#      exclude: []
+#      include: []
+#      additional:
+#        validation: 'suffix'
 #  -
 #      field: tls.handshake
 #      method: default_clear_all

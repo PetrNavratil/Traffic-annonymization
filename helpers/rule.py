@@ -13,11 +13,11 @@ class Rule:
         'additional': {}
     }
 
-    def __init__(self, field, params, method: Modifier, pool: SharedPool, logger, order):
+    def __init__(self, field, rule, method: Modifier, pool: SharedPool, logger, order):
         self.appearance = 0
         self.field = field
         self.field_path = self.parse_rule_path(field)
-        self.params = self.validate_params(params)
+        self.params = self.validate_params(rule)
         self.method = method
         self.pool = pool
         self.logger = logger

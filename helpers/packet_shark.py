@@ -1,5 +1,6 @@
 import sys
 from typing import Union, List, Dict
+from copy import deepcopy
 
 from helpers.packet_field import PacketField
 
@@ -26,21 +27,33 @@ class SharkPacket:
         self.tcp_next_seq = self.__get_tcp_next_sequence(packet)
         self.tcp_payload_field = self.__get_tcp_payload_field(packet)
         self.tcp_has_segment = self.__get_tcp_has_segment(packet)
-        self.tcp_segment_field = self.__get_tcp_segment_field(packet)
-        self.last_protocol_from_frame = self.__get_last_protocol_from_frame(packet)
+        self.tcp_segment_fields = self.__get_tcp_segment_field(packet)
         self.last_protocol = self.__get_last_protocol_from_frame(packet)
         self.last_protocol_parsed = self.last_protocol in self.protocols and self.last_protocol != 'tcp'
-        self.tcp_segment_clear_length = self.__get_tcp_segment_clear_length(packet)
         self.unknown_tcp = self.tcp_payload_field is not None and self.last_protocol_parsed
+        self.tcp_segments_clear_fields = self.__get_tcp_segment_clear_fields(packet)
 
-        if self.is_tcp:
-            # print(self.index, 'has segment', self.tcp_has_segment)
-            # print(self.index, 'last protocol parsed', self.last_protocol_parsed)
-            # print(self.index, 'segments clear length', self.tcp_segment_clear_length)
-            # TODO: comment and do better
-            if self.tcp_segment_field:
-                # print(self.index, self.tcp_segment_clear_length)
-                self.tcp_segment_field.length = self.tcp_segment_clear_length
+        if self.tcp_has_segment:
+            print('CLEAR')
+            for field in self.tcp_segments_clear_fields:
+                print(field.position, field.length)
+            print('CLEAR END')
+
+        # if self.is_tcp:
+        #     # print(self.index, 'has segment', self.tcp_has_segment)
+        #     # print(self.index, 'last protocol parsed', self.last_protocol_parsed)
+        #     # print(self.index, 'segments clear length', self.tcp_segment_clear_length)
+        #     # TODO: comment and do better
+        #     if self.tcp_segment_fields:
+        #         # print(self.index, self.tcp_segment_clear_length)
+        #         print('WTTTTFFFF')
+        #         print(self.tcp_segments_clear_fields[0].length)
+        #         self.tcp_segment_fields[0].length = self.tcp_segment_clear_length
+        #         print(self.tcp_segments_clear_fields[0].length)
+        #         # print('CLEAR')
+        #         # for item in self.__get_tcp_segment_clear_fields(packet):
+        #         #     print('start', item.position, 'length', item.length)
+        #         # print('CLEAR')
 
         # print(self.tcp_stream)
 
@@ -62,6 +75,7 @@ class SharkPacket:
             timestamp_microseconds = '0'
         origin_size = frame['frame.cap_len']
         current_size = frame['frame.len']
+        # TODO: nespravne uzity byte order, musi byt souborovy
         return bytearray((int(timestamp).to_bytes(4, sys.byteorder) \
                              + int(timestamp_microseconds).to_bytes(4, sys.byteorder, signed=True) \
                              + int(current_size).to_bytes(4, sys.byteorder) \
@@ -152,39 +166,63 @@ class SharkPacket:
         if self.tcp_has_segment:
             tcp_segment_fields = self.__get_packet_fields(packet, ['tcp', 'segment_data_raw'], allow_wildcard=False)
             if tcp_segment_fields is not None:
-                return tcp_segment_fields[0]
+                print('SEGMENTY ', tcp_segment_fields)
+                return tcp_segment_fields
             return None
         return None
 
-    def __get_tcp_segment_ends_packet(self):
+    def __get_tcp_segment_clear_fields(self, packet):
+        if self.tcp_retransmission:
+            return []
         if self.tcp_has_segment:
-            print('segment', self.tcp_segment_field.position, 'payload',  self.tcp_payload_field.position)
-            return self.tcp_segment_field.position != self.tcp_payload_field.position
-        # better delete end of packet
-        return True
-
-    def __get_tcp_segment_clear_length(self, packet):
-        if self.tcp_has_segment:
+            fields = [deepcopy(item) for item in self.tcp_segment_fields]
             # definitely end
-            if self.tcp_segment_field.position != self.tcp_payload_field.position:
-                print('DEFINITELY END')
-                return self.tcp_segment_field.length
-            # can be start but also whole packet
-            else:
-                if self.last_protocol_parsed:
-                    last_protocols = packet[f'{self.last_protocol}_raw']
-                    # get first last protocol parsed
-                    if type(last_protocols[0]) is list:
-                        field = PacketField(last_protocols[0])
-                        # TODO: NENI DORESENE, SPATNE TO PARSUJE PRVNI POSLEDNI
-                        print('heeer', field.position, self.tcp_segment_field.position)
-                        return field.position - self.tcp_segment_field.position
-                    field = PacketField(last_protocols)
-                    return field.position - self.tcp_segment_field.position
-                #     nothing but TCP - only payload - segment is all over payload
+            if len(self.tcp_segment_fields) == 1:
+                if self.tcp_segment_fields[0].position != self.tcp_payload_field.position:
+                    print('DEFINITELY END')
+                    return fields
+                # can be start but also whole packet
                 else:
-                    return self.tcp_segment_field.length
-        return 0
+                    print("START SEGEMNT")
+                    if self.last_protocol_parsed:
+                        last_protocol_field = self.__get_last_protocol_field(packet)
+                        if last_protocol_field is not None:
+                            print('last protocol', last_protocol_field.position)
+                            fields[0].length = last_protocol_field.position - self.tcp_segment_fields[0].position
+                            return fields
+                        else:
+                        # objekt obsahuje pouze slouceny protokol, tudiz, musel byt pouzity cely segmnent, jinak by se to chytlo uz nahore
+                            return []
+                    #     nothing but TCP - only payload - segment is all over payload
+                    else:
+                        return self.tcp_segment_fields.copy()
+            else:
+                fields = self.tcp_segment_fields.copy()
+                last_protocol_field = self.__get_last_protocol_field(packet)
+                if last_protocol_field is not None:
+                    print('last protocol', last_protocol_field.position)
+                    fields[0].length = last_protocol_field.position - self.tcp_segment_fields[0].position
+                    return fields
+                else:
+                    # objekt obsahuje pouze slouceny protokol, tudiz, musel byt pouzity cely segmnent, jinak by se to chytlo uz nahore
+                    # tshark does whatever tshark wants
+                    return []
+        return []
+
+    def __get_last_protocol_field(self, packet):
+        last_protocols = packet[f'{self.last_protocol}_raw']
+        if type(last_protocols[0]) is list:
+            for f in last_protocols:
+                field = PacketField(f)
+                if field.position != 0:
+                    return field
+            # TODO: NENI DORESENE, SPATNE TO PARSUJE PRVNI POSLEDNI
+            # print('heeer', field.position, self.tcp_segment_fields[0].position)
+            return None
+        field = PacketField(last_protocols)
+        if field.position != 0:
+            return field
+        return None
 
     def __get_tcp_has_segment(self, packet):
         if self.is_tcp:
@@ -192,7 +230,13 @@ class SharkPacket:
         return False
 
     def __get_last_protocol_from_frame(self, packet):
-        return packet['frame']['frame.protocols'].split(':')[-1]
+        protocols = packet['frame']['frame.protocols'].split(':')
+        if 'tcp' not in protocols:
+            return 'tcp'
+        tcp_index = protocols.index('tcp')
+        if tcp_index + 1 == len(protocols):
+            return 'tcp'
+        return protocols[tcp_index + 1]
 
     def __has_segmented_field_modifications(self):
         for protocol_field in self.protocol_fields.values():

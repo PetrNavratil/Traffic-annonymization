@@ -56,17 +56,17 @@ def generate_random_mac_preserve_flags(original_value: bytearray) -> bytearray:
     random_mac = generate_random_mac()
     original_flags_mask = generate_n_bit_mask(8, 2, prefix=False)
     generated_flags_mask = generate_n_bit_mask(8, 6, prefix=True)
-    print(f'original {original_flags_mask:b}')
-    print(f'generated {generated_flags_mask:b}')
-    print(f'original value {original_value[MAC_FLAGS_INDEX]:b}')
-    print(f'original value {(original_value[MAC_FLAGS_INDEX] & original_flags_mask):b}')
-    print(f'generated value {(random_mac[MAC_FLAGS_INDEX]):b}')
-    print(f'generated value {(random_mac[MAC_FLAGS_INDEX] & generated_flags_mask):b}')
+    # print(f'original {original_flags_mask:b}')
+    # print(f'generated {generated_flags_mask:b}')
+    # print(f'original value {original_value[MAC_FLAGS_INDEX]:b}')
+    # print(f'original value {(original_value[MAC_FLAGS_INDEX] & original_flags_mask):b}')
+    # print(f'generated value {(random_mac[MAC_FLAGS_INDEX]):b}')
+    # print(f'generated value {(random_mac[MAC_FLAGS_INDEX] & generated_flags_mask):b}')
     masked_flag_byte = original_value[MAC_FLAGS_INDEX] & original_flags_mask
     random_mac[MAC_FLAGS_INDEX] &= generated_flags_mask
-    print(f'meh {random_mac[MAC_FLAGS_INDEX]:b}')
+    # print(f'meh {random_mac[MAC_FLAGS_INDEX]:b}')
     random_mac[MAC_FLAGS_INDEX] |= original_value[MAC_FLAGS_INDEX] & original_flags_mask
-    print(f'result {random_mac[MAC_FLAGS_INDEX]:b}')
+    # print(f'result {random_mac[MAC_FLAGS_INDEX]:b}')
     return random_mac
 
 

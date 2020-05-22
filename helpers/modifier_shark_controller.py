@@ -62,7 +62,7 @@ class ModifierSharkController:
                     self.streams[shark_packet.tcp_stream]['packets'].append({'index': shark_packet.index, 'seq':shark_packet.tcp_seq, 'next_seq': shark_packet.tcp_next_seq})
                     if shark_packet.tcp_lost:
                         self.streams[shark_packet.tcp_stream]['valid'] = False
-                self.packets[j+1] = PacketModification(j+1, self.position, shark_packet.packet_length, shark_packet.tcp_payload_field, shark_packet.last_protocol_parsed, shark_packet.tcp_has_segment, shark_packet.tcp_segment_field)
+                self.packets[j+1] = PacketModification(j+1, self.position, shark_packet.packet_length, shark_packet.tcp_payload_field, shark_packet.last_protocol_parsed, shark_packet.tcp_has_segment, shark_packet.tcp_segment_fields, shark_packet.tcp_segments_clear_fields)
                 self.position += shark_packet.packet_length + TsharkAdapter.PCAP_PACKET_HEADER
                 if shark_packet.tcp_retransmission:
                     # print('retransmission')
@@ -77,8 +77,13 @@ class ModifierSharkController:
                 self.run_packet_modifiers(shark_packet, self.packets[j+1], {**file_info, 'packet_index': shark_packet.index})
                 # validate packet segments
                 if shark_packet.tcp_segment_indexes:
-                    for index in shark_packet.tcp_segment_indexes:
-                        self.packets[index].tcp_segment_used = True
+                    for packet_index in shark_packet.tcp_segment_indexes:
+                        print('loations', shark_packet.tcp_segment_locations)
+                        segment_info = shark_packet.tcp_segment_locations[packet_index]
+                        self.packets[packet_index].validate_segments(segment_info.length)
+                        # TODO: rozsirit
+                        # print('UNUSED SEGMENTS', self.packets[packet_index].tcp_unused_segments)
+                        self.packets[packet_index].tcp_segment_used = True
             print("END OF MODIFYING PHASE")
             print("VALIDATING TCP STREAMS")
             self.validate_tcp_streams()
@@ -127,12 +132,20 @@ class ModifierSharkController:
                 packet.remove_all_modifications_after_tcp()
                 packet.add_tcp_payload_clear_modification()
             else:
-                if not packet.tcp_segment_used:
-                    print(packet.packet_index)
-                    packet.add_tcp_segment_clear_modification()
+                # if not packet.tcp_segment_used:
+                if packet.tcp_clear_segments:
+                    print('YOLO', packet.packet_index)
+                    # packet.add_tcp_segment_clear_modification()
+                    packet.add_tcp_segments_clear_modifications()
                 if packet.tcp_unknown:
                     packet.remove_all_modifications_after_tcp()
                     packet.add_tcp_payload_clear_modification()
+                # if not packet.tcp_segment_used:
+                #     print(packet.packet_index)
+                #     packet.add_tcp_segment_clear_modification()
+                # if packet.tcp_unknown:
+                #     packet.remove_all_modifications_after_tcp()
+                #     packet.add_tcp_payload_clear_modification()
 
     def run_packet_modifiers(self, packet: SharkPacket, packet_modification: PacketModification, file_info):
         for rule in self.parsed_rules:
@@ -198,10 +211,10 @@ class ModifierSharkController:
             else:
                 self.pools[pool_key] = SharedPool(field)
             class_name = rule['class'] if 'class' in rule else None
-            modifier = self.__get_modifier(class_name, pool_key, rule['method'])
+            modifier = self.__get_modifier(class_name, pool_key, rule['modifier'])
             # method = self.__get_method(modifier['instance'], rule['method'], field)
             parsed_rules.append(
-                Rule(field, rule["params"], modifier['instance'], self.pools[pool_key], self.logger, i)
+                Rule(field, rule, modifier['instance'], self.pools[pool_key], self.logger, i)
             )
         return parsed_rules
 

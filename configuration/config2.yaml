@@ -2,25 +2,22 @@ tcp_stream: 'clever'
 reset_pools: true
 generate_meta_files: false
 search_all_protocols: false
-files:
-  - 'dhcp.pcap'
-#  - 'file2.pcap'
 rules:
+#  -
+#      field: http.host
+#      modifier: HttpTextRandom
+#      exclude:
+#        value: ['Host: www.foo.com']
+#        validation: 'prefix'
+#      include: []
+#      additional:
+#          foo: 'bar'
   -
-      field: http.host
-      modifier: HttpTextRandom
-      exclude:
-        value: ['Host: www.foo.com']
-        validation: 'prefix'
-      include: []
-      additional:
-          foo: 'bar'
-  -
-      field: udp.srcport
+      field: eth.type
       modifier: NumberMarker
       value_group: 'src_port'
       value: 123
-      include: [[0,1024], 8080]
+      include: []
       exclude: []
 #  -
 #      field: ip.src

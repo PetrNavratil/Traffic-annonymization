@@ -7,7 +7,7 @@ from helpers.packet_field import PacketField
 
 class SharkPacket:
 
-    def __init__(self, packet, rules, index):
+    def __init__(self, packet, rules, index, search_all_protocols):
         self.index = index
         self.packet_bytes = bytearray.fromhex(packet['frame_raw'][0])
         self.packet_length = int(packet['frame_raw'][2])
@@ -58,7 +58,7 @@ class SharkPacket:
         # print(self.tcp_stream)
 
         for rule in rules:
-            parsed_fields = self.__get_packet_fields(packet, rule.field_path)
+            parsed_fields = self.__get_packet_fields(packet, rule.field_path, search_all=search_all_protocols)
             if parsed_fields is not None:
                 if self.is_segmented:
                     for field in parsed_fields:
@@ -245,19 +245,30 @@ class SharkPacket:
                     return True
         return False
 
-    def __get_packet_fields(self, packet, field_path, allow_wildcard=True) -> Union[List[PacketField], None]:
+    def __get_packet_fields(self, packet, field_path, allow_wildcard=True, search_all=False) -> Union[List[PacketField], None]:
         if '.'.join(field_path) == PacketField.FRAME_TIME_PATH:
             return [PacketField([None, 0, 8, 0, 0], PacketField.FRAME_TIME_PATH)]
-        if field_path[0] not in self.protocols:
-            return None
-        remaining_field_path = field_path[1::]
-        field = packet[field_path[0]]
-        if type(field) is str:
-            print("SEGMENTED PACKET")
-            return None
-        field_prefix = field_path[0]
-        json_path = [field_path[0]]
-        return self.__find_nested_field(field,field_prefix, remaining_field_path, json_path, not allow_wildcard)
+        if search_all:
+            fields = []
+            for protocol in self.protocols:
+                remaining_path_modifier = 1 if protocol == field_path[0] else 0
+                result = self.__find_nested_field(packet[protocol], field_path[0], field_path[remaining_path_modifier:], [protocol], not allow_wildcard)
+                if result is not None:
+                    fields.extend(result)
+            if len(fields) == 0:
+                return None
+            return fields
+        else:
+            if field_path[0] not in self.protocols:
+                return None
+            remaining_field_path = field_path[1::]
+            field = packet[field_path[0]]
+            if type(field) is str:
+                print("SEGMENTED PACKET")
+                return None
+            field_prefix = field_path[0]
+            json_path = [field_path[0]]
+            return self.__find_nested_field(field,field_prefix, remaining_field_path, json_path, not allow_wildcard)
 
     def __find_nested_field(self, field, prefix_path, remaining_path, json_path, wild_card_used) -> Union[List[PacketField], None]:
         field_prefix = prefix_path
@@ -429,7 +440,7 @@ class SharkPacket:
             available_protocols.remove(path)
             last_layer = path
 
-    def modify_packet_field(self, field: PacketField, value, packet_bytes):
+    def modify_packet(self, field: PacketField, value, packet_bytes):
         print("MODYFYING ", field.field_path, field.position, field.is_segmented)
         if field.has_mask():
             packet_bytes[field.position] &= field.get_complementary_mask()

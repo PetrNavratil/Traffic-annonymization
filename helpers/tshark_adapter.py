@@ -49,7 +49,6 @@ class TsharkAdapter:
         self.endianness = None
 
     def get_global_header(self, file_name):
-        # TODO: only works for pcap
         with open(file_name, 'rb') as f:
             return f.read(TsharkAdapter.PCAP_GLOBAL_HEADER)
 
@@ -72,7 +71,7 @@ class TsharkAdapter:
     def write_modified_packet(self, modified_packet_bytes):
         self.output_file.write(modified_packet_bytes)
 
-    def write_modified_field_data(self, data, position):
+    def write_field_data(self, data, position):
         self.go_to_file_position(position)
         self.write_modified_packet(data)
 

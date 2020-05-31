@@ -7,8 +7,10 @@ class Modifier(ABC):
 
     def __init__(self):
         self.unique = True
+        self.store_value = True
         self.exclude: ExcludeInclude = ExcludeInclude([], None)
         self.include: ExcludeInclude = ExcludeInclude([], None)
+        # rename to meta
         self.keys = {}
 
     @abstractmethod

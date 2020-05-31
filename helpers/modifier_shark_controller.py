@@ -18,7 +18,7 @@ from parser.tcp_stream_enum import TcpStream
 
 class ModifierSharkController:
 
-    def __init__(self, rules, adapter: TsharkAdapter, logger, tcp_stream_strategy, reset_pools, generate_meta_files):
+    def __init__(self, rules, adapter: TsharkAdapter, logger, tcp_stream_strategy, reset_pools, generate_meta_files, search_all_protocols):
         self.rules = rules
         self.modifier = BasicModifier()
         self.custom_classes = {}
@@ -33,6 +33,7 @@ class ModifierSharkController:
         self.tcp_stream_strategy = tcp_stream_strategy
         self.reset_pools = reset_pools
         self.generate_meta_files = generate_meta_files
+        self.search_all_protocols = search_all_protocols
 
     def reset_file_information(self):
         if self.reset_pools:
@@ -52,7 +53,7 @@ class ModifierSharkController:
             file_info = self.adapter.get_file_additional_info()
             for j, a in enumerate(packets):
                 print('PACKET', j+1)
-                shark_packet = SharkPacket(a, self.parsed_rules, j+1)
+                shark_packet = SharkPacket(a, self.parsed_rules, j+1, self.search_all_protocols)
                 if shark_packet.is_tcp:
                     if shark_packet.tcp_stream not in self.streams:
                         self.streams[shark_packet.tcp_stream] = {
@@ -106,7 +107,7 @@ class ModifierSharkController:
                         if not modification.frame_modification \
                         else modifying_packet.packet_start - TsharkAdapter.PCAP_PACKET_HEADER
                     offset = packet_start + modification.position
-                    self.adapter.write_modified_field_data(modification.data, offset)
+                    self.adapter.write_field_data(modification.data, offset)
             print("Writing changes ended")
             # print(self.streams)
             if self.reset_pools and self.generate_meta_files:
@@ -163,7 +164,7 @@ class ModifierSharkController:
                 field_modification = FieldModification(modified_value, field, rule.order)
                 # mask return value with current value and retrieve write value
                 # this is done so no read is performed while writing values to the output file
-                packet.modify_packet_field(field, modified_value, packet_bytes)
+                packet.modify_packet(field, modified_value, packet_bytes)
                 if field.has_mask():
                     modified_value = field.get_unmasked_field(packet_bytes)
                     field_modification.set_value(modified_value)

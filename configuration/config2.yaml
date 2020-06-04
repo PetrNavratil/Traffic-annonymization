@@ -12,13 +12,50 @@ rules:
 #      include: []
 #      additional:
 #          foo: 'bar'
+#  -
+#      field: ip.dst
+#      modifier: IPRandom
+#      include: []
+#      exclude: []
+#
+#  -
+#      field: ip.src
+#      modifier: IPRandom
+#      include: []
+#      exclude: []
+
   -
-      field: eth.type
-      modifier: NumberMarker
+      field: udp.srcport
+      modifier: NumberRandom
       value_group: 'src_port'
-      value: 123
       include: []
       exclude: []
+  -
+      field: udp.dstport
+      modifier: NumberRandom
+      value_group: 'src_port'
+      include: []
+      exclude: []
+
+  -
+      field: tcp.srcport
+      modifier: NumberRandom
+      value_group: 'src_port'
+      include: []
+      exclude: []
+  -
+      field: tcp.dstport
+      modifier: NumberRandom
+      value_group: 'src_port'
+      include: []
+      exclude: []
+#
+#  -
+#      field: tls.handshake.certificates
+#      modifier: ClearMarker
+#      value: 40
+#      include: []
+#      exclude: []
 #  -
 #      field: ip.src
 #      method: IPMarkerPreserveNPrefix

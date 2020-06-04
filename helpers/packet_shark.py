@@ -16,6 +16,7 @@ class SharkPacket:
         self.protocols = list(filter(lambda key: not key.endswith('_raw') and type(packet[key]) is not str, packet.keys()))
         self.is_tcp = 'tcp' in packet
         self.is_segmented = 'tcp.segments' in packet
+        self.tcp_field = self.__get_tcp_field(packet)
         self.tcp_segment_indexes = self.__get_tcp_segment_indexes(packet)
         self.tcp_segment_locations = self.__get_tcp_segments_location(packet)
         self.tcp_reassembled_data = self.__get_tcp_reassembled_data(packet)
@@ -80,6 +81,13 @@ class SharkPacket:
                              + int(timestamp_microseconds).to_bytes(4, sys.byteorder, signed=True) \
                              + int(current_size).to_bytes(4, sys.byteorder) \
                              + int(origin_size).to_bytes(4, sys.byteorder)))
+
+    def __get_tcp_field(self, packet):
+        if self.is_tcp:
+            tcp_field = self.__get_packet_fields(packet, ['tcp_raw'], allow_wildcard=False)
+            if tcp_field is not None:
+                return tcp_field[0]
+        return None
 
     def __get_tcp_segment_indexes(self, packet):
         if self.is_segmented:
@@ -248,6 +256,10 @@ class SharkPacket:
     def __get_packet_fields(self, packet, field_path, allow_wildcard=True, search_all=False) -> Union[List[PacketField], None]:
         if '.'.join(field_path) == PacketField.FRAME_TIME_PATH:
             return [PacketField([None, 0, 8, 0, 0], PacketField.FRAME_TIME_PATH)]
+        if len(field_path) == 1:
+            if field_path[0] in packet:
+                return [PacketField(packet[field_path[0]], field_path[0], field_path)]
+            return None
         if search_all:
             fields = []
             for protocol in self.protocols:

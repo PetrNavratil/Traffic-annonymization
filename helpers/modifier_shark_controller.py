@@ -63,19 +63,38 @@ class ModifierSharkController:
                     self.streams[shark_packet.tcp_stream]['packets'].append({'index': shark_packet.index, 'seq':shark_packet.tcp_seq, 'next_seq': shark_packet.tcp_next_seq})
                     if shark_packet.tcp_lost:
                         self.streams[shark_packet.tcp_stream]['valid'] = False
-                self.packets[j+1] = PacketModification(j+1, self.position, shark_packet.packet_length, shark_packet.tcp_payload_field, shark_packet.last_protocol_parsed, shark_packet.tcp_has_segment, shark_packet.tcp_segment_fields, shark_packet.tcp_segments_clear_fields)
+                self.packets[j+1] = PacketModification(
+                    j+1,
+                    self.position,
+                    shark_packet.packet_length,
+                    shark_packet.tcp_payload_field,
+                    shark_packet.last_protocol_parsed,
+                    shark_packet.tcp_has_segment,
+                    shark_packet.tcp_segment_fields,
+                    shark_packet.tcp_segments_clear_fields,
+                    shark_packet.tcp_field
+                )
                 self.position += shark_packet.packet_length + TsharkAdapter.PCAP_PACKET_HEADER
                 if shark_packet.tcp_retransmission:
                     # print('retransmission')
                     duplicate_packet_index = self.find_retransmission_packet(shark_packet.tcp_stream, shark_packet.index, shark_packet.tcp_seq, shark_packet.tcp_next_seq)
+                    self.packets[j+1].packet_origin = duplicate_packet_index
                     # print('duplicate', duplicate_packet_index)
-                    if duplicate_packet_index is not None:
-                        # copy all actions as it is TCP retransmission
-                        self.packets[j+1].append_modifications(self.packets[duplicate_packet_index].modifications)
-                        print(f'{j+1} copied from {duplicate_packet_index}')
-                        continue
+                    # FORMER RETRANSMISSION
+                    # if duplicate_packet_index is not None:
+                    #     # copy all actions as it is TCP retransmission
+                    #     self.packets[j+1].append_modifications(self.packets[duplicate_packet_index].modifications)
+                    #     print(f'{j+1} copied from {duplicate_packet_index}')
+                    #     continue
                 # print('Running  modifiers for ', j+1)
                 self.run_packet_modifiers(shark_packet, self.packets[j+1], {**file_info, 'packet_index': shark_packet.index})
+                if shark_packet.tcp_retransmission:
+                    # print('retransmission')
+                    duplicate_packet_index = self.find_retransmission_packet(shark_packet.tcp_stream, shark_packet.index, shark_packet.tcp_seq, shark_packet.tcp_next_seq)
+                    self.packets[j+1].packet_origin = duplicate_packet_index
+                    self.packets[j+1].remove_all_modifications_after_tcp()
+                    continue
+
                 # validate packet segments
                 if shark_packet.tcp_segment_indexes:
                     for packet_index in shark_packet.tcp_segment_indexes:
@@ -129,6 +148,12 @@ class ModifierSharkController:
         invalid_streams_packets = [] if self.tcp_stream_strategy == TcpStream.CLEVER.value else \
             [packet['index'] for item in self.streams.items() if item[1]['valid'] is False for packet in item[1]['packets']]
         for packet in self.packets.values():
+            if packet.packet_origin is not None:
+                origin_packet = self.packets[packet.packet_origin]
+                modifications = origin_packet.get_tcp_and_after_tcp_modifications()
+                print("HAPPENING AND MODIFICATIONS", modifications)
+                packet.append_modifications(modifications)
+
             if self.tcp_stream_strategy == TcpStream.CLEAR.value and packet.packet_index in invalid_streams_packets:
                 packet.remove_all_modifications_after_tcp()
                 packet.add_tcp_payload_clear_modification()
@@ -212,7 +237,7 @@ class ModifierSharkController:
             else:
                 self.pools[pool_key] = SharedPool(field)
             class_name = rule['class'] if 'class' in rule else None
-            modifier = self.__get_modifier(class_name, pool_key, rule['modifier'])
+            modifier = self.__get_modifier(rule['modifier'], pool_key, rule['modifier'])
             # method = self.__get_method(modifier['instance'], rule['method'], field)
             parsed_rules.append(
                 Rule(field, rule, modifier['instance'], self.pools[pool_key], self.logger, i)

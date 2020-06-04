@@ -7,7 +7,7 @@ from parser.tcp_stream_enum import TcpStream
 class ConfigParser:
 
     config = {}
-    verbose = True
+    verbose = False
 
     def __init__(self):
         parser = argparse.ArgumentParser()

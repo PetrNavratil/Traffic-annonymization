@@ -15,6 +15,8 @@ class SharkPacket:
         self.packet_header = self.parse_packet_header(packet['frame'])
         self.protocols = list(filter(lambda key: not key.endswith('_raw') and type(packet[key]) is not str, packet.keys()))
         self.is_tcp = 'tcp' in packet
+        self.is_udp = 'udp' in packet
+        self.udp_stream = self.__get_udp_stream(packet)
         self.is_segmented = 'tcp.segments' in packet
         self.tcp_field = self.__get_tcp_field(packet)
         self.tcp_segment_indexes = self.__get_tcp_segment_indexes(packet)
@@ -146,6 +148,14 @@ class SharkPacket:
             return None
         return None
 
+    def __get_udp_stream(self, packet):
+        if self.is_udp:
+            if 'udp.stream' in packet['udp']:
+                print( packet['udp']['udp.stream'])
+                return packet['udp']['udp.stream']
+            return None
+        return None
+
     def __get_tcp_sequence(self, packet):
         if self.is_tcp:
             if 'tcp.seq' in packet['tcp']:
@@ -153,7 +163,6 @@ class SharkPacket:
             return None
         return None
 
-    # TODO: ask MARTIN about finding same packet
     def __get_tcp_next_sequence(self, packet):
         if self.is_tcp:
             if 'tcp.nxtseq' in packet['tcp']:

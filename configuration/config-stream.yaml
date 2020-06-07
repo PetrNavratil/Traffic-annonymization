@@ -1,19 +1,18 @@
 tcp_stream: 'clever'
 reset_pools: true
-generate_meta_files: false
+generate_meta_files: true
 search_all_protocols: false
 rules:
   -
-      field: eth.dst
-      modifier: MACRandomPreserveFlags
+      field: tcp.srcport
+      modifier: NumberRandom
       include: []
       exclude: []
-      value_group: 'ETH'
-      stream_unique: true
+      value_group: 'PORTY'
 
   -
-      field: eth.src
-      modifier: MACRandomPreserveFlags
+      field: tcp.dstport
+      modifier: NumberRandom
       include: []
       exclude: []
-      value_group: 'ETH'
+      value_group: 'PORTY'

@@ -26,3 +26,7 @@ class SharedPool:
 
     def is_used(self, value: bytearray) -> bool:
         return value in self.pool.values()
+
+    def transform(self):
+        for key, value in self.pool.items():
+            self.pool[key] = value.hex()

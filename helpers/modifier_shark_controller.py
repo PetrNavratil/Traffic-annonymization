@@ -188,7 +188,7 @@ class ModifierSharkController:
                 # CHOOSE PACKET DATA OR REASSEMBLED DATA
                 packet_bytes = self.__get_bytes_for_modification(packet, field)
                 value = field.get_field_value(packet_bytes)
-                modified_value = rule.run_rule(value, file_info)
+                modified_value = rule.run_rule(value, packet.udp_stream, packet.tcp_stream, file_info)
                 # not modified, skip its field modification
                 if modified_value is None:
                     continue
@@ -275,7 +275,7 @@ class ModifierSharkController:
     def pools_dump(self):
         pool_info = {}
         for pool in self.pools.items():
-            print(pool[1].used_by)
+            pool[1].transform()
             pool_info.update([(pool[0], pool[1].pool)])
         return pool_info
 

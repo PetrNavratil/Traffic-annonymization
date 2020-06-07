@@ -1,0 +1,19 @@
+tcp_stream: 'clever'
+reset_pools: true
+generate_meta_files: false
+search_all_protocols: false
+rules:
+  -
+      field: eth.dst
+      modifier: MACRandomPreserveFlags
+      include: []
+      exclude: []
+      value_group: 'ETH'
+      stream_unique: true
+
+  -
+      field: eth.src
+      modifier: MACRandomPreserveFlags
+      include: []
+      exclude: []
+      value_group: 'ETH'

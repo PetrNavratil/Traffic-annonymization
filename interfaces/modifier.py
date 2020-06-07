@@ -31,8 +31,8 @@ class Modifier(ABC):
         self.exclude = ExcludeInclude(Validator.convert_options(meta_exclude.value, method, params), meta_exclude.validation)
         meta_include = self.__get_include_exclude(include)
         self.include = ExcludeInclude(Validator.convert_options(meta_include.value, method, params), meta_include.validation)
-        print('EX', self.exclude)
-        print('IN', self.include)
+        # print('EX', self.exclude)
+        # print('IN', self.include)
 
     def __get_include_exclude(self, value) -> ExcludeInclude:
         if type(value) is dict:

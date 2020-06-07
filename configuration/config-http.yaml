@@ -12,19 +12,19 @@ rules:
 #      include: []
 #      additional:
 #          foo: 'bar'
-#  -
-#      field: eth.dst
-#      modifier: MACRandomPreserveFlags
-#      include: []
-#      exclude: []
-#      value_group: 'ETH'
-#
-#  -
-#      field: eth.src
-#      modifier: MACRandomPreserveFlags
-#      include: []
-#      exclude: []
-#      value_group: 'ETH'
+  -
+      field: eth.dst
+      modifier: MACRandomPreserveFlags
+      include: []
+      exclude: []
+      value_group: 'ETH'
+
+  -
+      field: eth.src
+      modifier: MACRandomPreserveFlags
+      include: []
+      exclude: []
+      value_group: 'ETH'
 #
 #  -
 #      field: arp.src.hw_mac
@@ -36,17 +36,18 @@ rules:
 #      modifier: MACRandomPreserveFlags
 #      value_group: 'ETH'
 
-#  -
-#      field: ip.dst
-#      modifier: IPPrefixPreservation
-#      include: []
-#      exclude: []
-#      value_group: 'IP'
+  -
+      field: ip.dst
+      modifier: IPRandomPreserveNPrefix
+      value: 24
+      include: []
+      exclude: []
+      value_group: 'IP'
 
   -
       field: ip.src
       modifier: IPRandomPreserveNPrefix
-      value: 16
+      value: 24
       include: []
       exclude: []
       value_group: 'IP'
@@ -78,18 +79,45 @@ rules:
 #      include: []
 #      exclude: []
 #
-#  -
-#      field: tcp.srcport
-#      modifier: NumberRandom
-#      value_group: 'src_port'
-#      include: []
-#      exclude: []
-#  -
-#      field: tcp.dstport
-#      modifier: NumberRandom
-#      value_group: 'src_port'
-#      include: []
-#      exclude: []
+  -
+      field: tcp.srcport
+      modifier: NumberRandom
+      value_group: 'src_port'
+      include: []
+      exclude: []
+  -
+      field: tcp.dstport
+      modifier: NumberRandom
+      value_group: 'src_port'
+      include: []
+      exclude: []
+
+  -
+      field: frame.time_epoch
+      modifier: FrameTimeMarkerClearIncrement
+      value: '0.500000'
+      include: []
+      exclude: []
+
+  -
+      field: http.request.line
+      modifier: HttpTextRandomPreservePrefix
+      include:
+        validation: 'prefix'
+        value: ['SOAPAction']
+      exclude: []
+
+  -
+      field: http.user_agent
+      modifier: HttpTextRandomPreservePrefix
+      include: []
+      exclude: []
+
+  -
+      field: http.file_data
+      modifier: ClearMarker
+      include: []
+      exclude: []
 #
 #  -
 #      field: http.host

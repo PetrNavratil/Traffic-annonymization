@@ -34,11 +34,11 @@ class SharkPacket:
         self.unknown_tcp = self.tcp_payload_field is not None and self.last_protocol_parsed
         self.tcp_segments_clear_fields = self.__get_tcp_segment_clear_fields(packet)
 
-        if self.tcp_has_segment:
-            print('CLEAR')
-            for field in self.tcp_segments_clear_fields:
-                print(field.position, field.length)
-            print('CLEAR END')
+        # if self.tcp_has_segment:
+        #     print('CLEAR')
+        #     for field in self.tcp_segments_clear_fields:
+        #         print(field.position, field.length)
+        #     print('CLEAR END')
 
         # if self.is_tcp:
         #     # print(self.index, 'has segment', self.tcp_has_segment)
@@ -91,7 +91,7 @@ class SharkPacket:
 
     def __get_tcp_segment_indexes(self, packet):
         if self.is_segmented:
-            print('PACKET INDEX', self.index, 'segments', packet['tcp.segments']['tcp.segment'])
+            # print('PACKET INDEX', self.index, 'segments', packet['tcp.segments']['tcp.segment'])
             return [int(item) for item in packet['tcp.segments']['tcp.segment']]
         return None
 
@@ -174,7 +174,7 @@ class SharkPacket:
         if self.tcp_has_segment:
             tcp_segment_fields = self.__get_packet_fields(packet, ['tcp', 'segment_data_raw'], allow_wildcard=False)
             if tcp_segment_fields is not None:
-                print('SEGMENTY ', tcp_segment_fields)
+                # print('SEGMENTY ', tcp_segment_fields)
                 return tcp_segment_fields
             return None
         return None
@@ -187,15 +187,15 @@ class SharkPacket:
             # definitely end
             if len(self.tcp_segment_fields) == 1:
                 if self.tcp_segment_fields[0].position != self.tcp_payload_field.position:
-                    print('DEFINITELY END')
+                    # print('DEFINITELY END')
                     return fields
                 # can be start but also whole packet
                 else:
-                    print("START SEGEMNT")
+                    # print("START SEGEMNT")
                     if self.last_protocol_parsed:
                         last_protocol_field = self.__get_last_protocol_field(packet)
                         if last_protocol_field is not None:
-                            print('last protocol', last_protocol_field.position)
+                            # print('last protocol', last_protocol_field.position)
                             fields[0].length = last_protocol_field.position - self.tcp_segment_fields[0].position
                             return fields
                         else:
@@ -208,7 +208,7 @@ class SharkPacket:
                 fields = self.tcp_segment_fields.copy()
                 last_protocol_field = self.__get_last_protocol_field(packet)
                 if last_protocol_field is not None:
-                    print('last protocol', last_protocol_field.position)
+                    # print('last protocol', last_protocol_field.position)
                     fields[0].length = last_protocol_field.position - self.tcp_segment_fields[0].position
                     return fields
                 else:
@@ -311,7 +311,7 @@ class SharkPacket:
                 if type(field[prefixed_full_field_path]) is list:
                     # field is array and no search is needed as its full_field_path_match
                     if type(field[prefixed_full_field_path][0]) is list:
-                        print("LIST")
+                        # print("LIST")
                         resolved_fields = []
                         for j, f in enumerate(field[prefixed_full_field_path]):
                             resolved_fields.append(PacketField(f, prefixed_full_field_path, json_path))
@@ -453,7 +453,7 @@ class SharkPacket:
             last_layer = path
 
     def modify_packet(self, field: PacketField, value, packet_bytes):
-        print("MODYFYING ", field.field_path, field.position, field.is_segmented)
+        # print("MODYFYING ", field.field_path, field.position, field.is_segmented)
         if field.has_mask():
             packet_bytes[field.position] &= field.get_complementary_mask()
             shifted_value = value[0] << field.shift_count()

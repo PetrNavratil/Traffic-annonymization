@@ -17,7 +17,7 @@ class ConfigParser:
         self.config = ConfigParser.__load_config_file(arguments['config'])
         self.verbose = self.config['verbose'] if 'verbose' in self.config else self.verbose
         self.reset_pools = self.config['reset_pools'] if 'reset_pools' in self.config else False
-        self.tpc_stream_strategy = self.config['tcp_stream'] if 'tcp_stream' in self.config else TcpStream.CLEAR
+        self.tpc_stream_strategy = self.config['tcp_stream'] if 'tcp_stream' in self.config else TcpStream.NONE
         self.generate_meta_files = self.config['generate_meta_files'] if 'generate_meta_files' in self.config else False
         self.search_all_protocols = self.config['search_all_protocols'] if 'search_all_protocols' in self.config else False
         assert self.tpc_stream_strategy in [item.value for item in TcpStream]

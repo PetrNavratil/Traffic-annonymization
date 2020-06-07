@@ -22,8 +22,8 @@ class PacketModification:
         self.tcp_segment_field = tcp_segment_field[0] if tcp_segment_field is not None else None
         self.tcp_unknown = self.tcp_payload_field is not None and not self.has_tcp_segment and not self.last_protocol_parsed
         self.tcp_field = tcp_field
-        if self.tcp_unknown:
-            print('IN', packet_index, self.tcp_payload_field, self.has_tcp_segment, self.last_protocol_parsed)
+        # if self.tcp_unknown:
+        #     print('IN', packet_index, self.tcp_payload_field, self.has_tcp_segment, self.last_protocol_parsed)
 
     def add_modification(self, modification: FieldModification):
         self.modifications.append(modification)
@@ -52,7 +52,7 @@ class PacketModification:
 
     def add_tcp_segments_clear_modifications(self):
         for field in self.tcp_clear_segments:
-                print('field', field.length)
+                # print('field', field.length)
                 self.modifications.append(
                     FieldModification(bytearray(field.length), field, 1000))
 

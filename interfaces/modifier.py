@@ -25,6 +25,9 @@ class Modifier(ABC):
     def transform_exclude_include_method(self, additional_params):
         pass
 
+    def transform_output_value(self, value: bytearray):
+        return value.hex()
+
     def transform_exclude_include(self, exclude, include, additional_params):
         method, params = self.transform_exclude_include_method(additional_params)
         meta_exclude = self.__get_include_exclude(exclude)

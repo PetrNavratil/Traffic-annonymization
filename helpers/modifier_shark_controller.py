@@ -238,13 +238,11 @@ class ModifierSharkController:
         for i, rule in enumerate(rules):
             field = rule['field']
             pool_key = rule['value_group'] if 'value_group' in rule else field
+            modifier = self.__get_modifier(rule['modifier'], pool_key, rule['modifier'])
             if pool_key in self.pools:
                 self.pools[pool_key].append_field(field)
             else:
-                self.pools[pool_key] = SharedPool(field)
-            class_name = rule['class'] if 'class' in rule else None
-            modifier = self.__get_modifier(rule['modifier'], pool_key, rule['modifier'])
-            # method = self.__get_method(modifier['instance'], rule['method'], field)
+                self.pools[pool_key] = SharedPool(field, modifier['instance'].transform_output_value)
             parsed_rules.append(
                 Rule(field, rule, modifier['instance'], self.pools[pool_key], self.logger, i)
             )
@@ -275,7 +273,7 @@ class ModifierSharkController:
     def pools_dump(self):
         pool_info = {}
         for pool in self.pools.items():
-            pool[1].transform()
+            pool[1].transform(Rule.STREAM_KEY_DELIMITER)
             pool_info.update([(pool[0], pool[1].pool)])
         return pool_info
 

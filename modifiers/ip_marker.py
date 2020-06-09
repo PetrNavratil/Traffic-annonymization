@@ -1,4 +1,4 @@
-from helpers.helpers import string_ip_to_byte_array
+from helpers.helpers import string_ip_to_byte_array, byte_array_ip_to_string
 from helpers.validator import Validator
 from interfaces.modifier import Modifier
 
@@ -17,4 +17,7 @@ class IPMarker(Modifier):
 
     def transform_exclude_include_method(self, additional_params):
         return Validator.ip_network_convert, {}
+
+    def transform_output_value(self, value: bytearray):
+        return byte_array_ip_to_string(value)
 

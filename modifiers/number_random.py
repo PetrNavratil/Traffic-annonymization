@@ -15,3 +15,6 @@ class NumberRandom(Modifier):
     def transform_exclude_include_method(self, additional_params):
         return Validator.convert_range, {}
 
+    def transform_output_value(self, value: bytearray):
+        return int().from_bytes(value, byteorder='big')
+

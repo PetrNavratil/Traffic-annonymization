@@ -5,8 +5,12 @@ které je možné libovolně upravovat.
 # Instalace
 Nástroj vyžaduje Jazyk **Python 3** (testováno na verzi 3.8.3). 
 
+## TShark
+Důležitou závislostí aplikace je nástroj **TShark**, který je nutné nainstalovat do systému. Nástroj je možné stáhnout 
+[zde](https://tshark.dev/setup/install/).
+
 ## YAJL
-Důležitou závislostí nástroje je knihovna **YAJL**, kteoru je nutné nainstalovat do systému
+Důležitou závislostí aplikace je knihovna **YAJL**, kteoru je nutné nainstalovat do systému
 jako sdílenou knihovnu. Knihovnu je možné stáhnout [zde](https://lloyd.github.io/yajl/).
 
 Na některých systémech dochází k nesprávné instalaci knihovny, která pak není dostupná knihovnou
@@ -20,6 +24,7 @@ dojde k výpisu, je možné přejít k instalaci závislostí.
 3. Vyhledání souboru lze provést příkazem `find / -name "yajl.pc"`.
 4. Cestu adresáře lze přidat příkazem `export PKG_CONFIG_PATH=PKG_CONFIG_PATH:{cesta_adresare}`.
 5. Ověřit bod 1.
+
 
 ## Instalace Python závislostí
 Pro aplikaci je vytvoření virtuální prostředí jazyka Python, které definuje všechny nutné závislosti.
@@ -37,6 +42,15 @@ Nástroj je možné spustit příkazem `python3 main.py`, přičemž pro svoje s
 Příklad spuštění
 
 `python3 main.py --config ../examples/politics/ip.yaml --files ../examples/data/ip.pcap`
+ 
+Anonymizované soubory se nacházejí na stejném místě, jako vstupní soubory. Vstupní soubor je zkopírován a doplněn o `.anonym`
+do původního jména. 
+
+Příklad:
+
+`../examples/data/ip.pcap` -> `../examples/data/ip.anonym.pcap`
+
+Meta soubory anonymizace jsou vygenerovány do složky `meta` v adresáři aplikace. 
  
 # Anonymizační politika
 Anonymizační proces aplikace je definován anonymizační politikou. Politika je ve formátu **YAML** a její struktura
@@ -96,6 +110,7 @@ anonymizačního pravidla, kde se uvádí název **třídy** daného modifikáto
 Pro přídání nového modifikátoru je nutné dodržet následující podmínky:
 * Implementace rozhraní `Modifier`, případně rozšíření již existujícího modifikátoru.
 * Jméno modifikátoru a název souboru, ve kterém je modifikátor obsažen jsou v následujícím vztahu. Jméno modifikátoru je v tzv. **PascalCase**, přičemž název souboru je v **snake_case**. Důvodem je automatické odvozování názvu souboru modifikátoru z jeho jména, jelikož jméno modifikátoru se uvádí v položce `modifier` anonymizačního pravidla. 
+* Modifikátor je umístěn v adresáři `modifiers`.
 
 ### Metody
 
@@ -118,3 +133,8 @@ Rozhraní obsahuje několik atributů, kterými lze upravovat chování anonymiz
 atributu `unique`.
 * `meta` obsahují data, které jsou exportovány do meta souborů. Lze tu uvést např. kryptografický klíč užitý při anonymizaci.
 * `exclude` a `include` obsahují transformovaná data položek `exclude` a `include` anonymizačního pravidla metodou `transform_exclude_include_method` v datovém typu `ExcludeInclude`. Typ představuje `NamedTuple` a lze jej nalézt v souboru `helpers.py`. 
+
+# Známé problémy
+Aplikace plně závisí na knihovně **YAJL**, která se na některých 64bit zařízeních chování jako 32bit a občas způsobí pád při zpracování velkých čísel. Zpravidla se
+jedná o čísla větší než 32 bitů. K situaci nastává, na mém zařízení, např. při zpracování protokolu `OSPF`. Nástroj TShark v tomto případě generuje pro některé atributy protokolu
+bitové masky o velikosti 64bitů a knihovna YAJL takto velké číslo nedokáže zpracovat. 

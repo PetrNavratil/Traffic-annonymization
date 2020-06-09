@@ -5,7 +5,6 @@ import sys
 from yacryptopan import CryptoPAn
 from random import getrandbits
 
-from scapy.volatile import RandIP, RandMAC
 
 from helpers.helpers import validate_string_field, generate_random_text, \
     string_to_byte_array, string_split_prefix, generate_prefixed_random_text, HTTP_LINE_PREFIX_DELIMITER, \
@@ -41,10 +40,10 @@ class BasicModifier:
 
     def dns_query_name_marker(self, original_value, value:str, exclude, include, validator, additional_parameters):
         cname = dns_cname_byte_array_to_string(original_value)
-        print(validator)
+        # print(validator)
         validate = getattr(Validator, validator) if validator is not None else Validator.validate_value_string_in
         if validate(cname, exclude, include, base='hexa'):
-            print(cname)
+            # print(cname)
             return dns_cname_string_to_byte_array(validate_string_field(value, len(original_value)))
         return None
 

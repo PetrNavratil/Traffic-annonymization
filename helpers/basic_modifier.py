@@ -5,7 +5,6 @@ import sys
 from yacryptopan import CryptoPAn
 from random import getrandbits
 
-from scapy.volatile import RandIP, RandMAC
 
 from helpers.helpers import validate_string_field, generate_random_text, \
     string_to_byte_array, string_split_prefix, generate_prefixed_random_text, HTTP_LINE_PREFIX_DELIMITER, \

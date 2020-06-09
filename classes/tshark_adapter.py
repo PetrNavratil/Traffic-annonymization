@@ -1,29 +1,6 @@
 import asyncio
 import os
 import shutil
-
-# 913 * Writes
-# the
-# hex
-# dump
-# of
-# a
-# node.A
-# json
-# array is written
-# containing
-# the
-# hex
-# dump, position, length, bitmask and type
-# of
-# 914 * the
-# node.
-# 915 * /
-# https://ask.wireshark.org/question/11743/where-is-tshark-t-jsonraw-documented/
-
-# https://github.com/hokiespurs/velodyne-copte r/wiki/PCAP-format
-
-
 from jsonslicer import JsonSlicer
 
 
@@ -65,27 +42,15 @@ class TsharkAdapter:
         slicer = loop.run_until_complete(self.__get_packets())
         return slicer
 
-    def write_global_header(self):
-        self.output_file.write(self.get_global_header(self.file_name))
-
-    def write_modified_packet(self, modified_packet_bytes):
+    def write_modified_data(self, modified_packet_bytes):
         self.output_file.write(modified_packet_bytes)
 
     def write_field_data(self, data, position):
         self.go_to_file_position(position)
-        self.write_modified_packet(data)
-
-    def get_current_file_position(self):
-        return self.output_file.tell()
+        self.write_modified_data(data)
 
     def go_to_file_position(self, position):
         self.output_file.seek(position, os.SEEK_SET)
-
-    def go_to_end_of_file(self):
-        self.go_to_nth_byte_position_from_end(0)
-
-    def go_to_nth_byte_position_from_end(self, length):
-        self.output_file.seek(length * (-1), os.SEEK_END)
 
     def close_output_file(self):
         if self.output_file is not None:

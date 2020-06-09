@@ -20,7 +20,3 @@ class FieldModification:
     def set_position(self, position):
         self.position = position
 
-    def info(self):
-        return
-        # print(f'Modifying {self.field_path}, position {self.position}, original pos {self.original_position}, '
-        #       f'original len {self.original_length}, current {self.data_length}, frame field {self.frame_modification}')

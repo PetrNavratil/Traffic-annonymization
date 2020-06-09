@@ -12,14 +12,6 @@ class SharedPool:
     def set_value(self, key, value):
         self.pool.update([(key, value)])
 
-    def print_pool(self):
-        print(self.pool)
-
-    def dump_pool(self):
-        return {
-            ','.join(self.used_by): self.pool
-        }
-
     def append_field(self, field):
         self.used_by.append(field)
 

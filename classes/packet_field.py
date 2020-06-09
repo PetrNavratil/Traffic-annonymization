@@ -63,21 +63,11 @@ class PacketField:
             self.is_segmented = False
             return
         raw_field = packet
-        # print('raw', self.__get_raw_parent_field_path())
         for path in self.__get_raw_parent_field_path():
             raw_field = raw_field[path]
         self.is_segmented = self.get_field(raw_field[1]) == 0
 
     def __get_raw_parent_field_path(self):
-        # path_copy = self.json_path.copy()
-        # path_copy.reverse()
-        # print('path', self.json_path)
-        # for i, path in enumerate(path_copy):
-        #     if type(path) is str:
-        #         path_copy[i] += '_raw'
-        #         break
-        # path_copy.reverse()
-        # return path_copy
         first_two = self.json_path[:2]
         if len(first_two) == 2:
             if type(first_two[1]) is int:

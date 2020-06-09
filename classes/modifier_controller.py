@@ -21,7 +21,6 @@ class ModifierController:
         self.pools = {}
         self.parsed_rules = self.__prepare_rules(rules)
         self.adapter = adapter
-        self.tcp_packets = {}
         self.packets: Dict[int, PacketModification] = {}
         self.position = TsharkAdapter.PCAP_GLOBAL_HEADER + TsharkAdapter.PCAP_PACKET_HEADER
         self.streams = {}
@@ -32,10 +31,8 @@ class ModifierController:
 
     def reset_file_information(self):
         if self.reset_pools:
-            # print('clearing')
             for pool in self.pools.values():
                 pool.reset_pool()
-        self.tcp_packets = {}
         self.packets = {}
         self.streams = {}
         self.position = TsharkAdapter.PCAP_GLOBAL_HEADER + TsharkAdapter.PCAP_PACKET_HEADER
@@ -47,8 +44,7 @@ class ModifierController:
             packets = self.adapter.get_packets()
             file_info = self.adapter.get_file_additional_info()
             for j, a in enumerate(packets):
-                # print('PACKET', j+1)
-                shark_packet = Packet(a, self.parsed_rules, j + 1, self.search_all_protocols)
+                shark_packet = Packet(a, self.parsed_rules, j + 1, self.search_all_protocols, self.adapter.endianness)
                 if shark_packet.is_tcp:
                     if shark_packet.tcp_stream not in self.streams:
                         self.streams[shark_packet.tcp_stream] = {
@@ -70,18 +66,6 @@ class ModifierController:
                     shark_packet.tcp_field
                 )
                 self.position += shark_packet.packet_length + TsharkAdapter.PCAP_PACKET_HEADER
-                if shark_packet.tcp_retransmission:
-                    # print('retransmission')
-                    duplicate_packet_index = self.find_retransmission_packet(shark_packet.tcp_stream, shark_packet.index, shark_packet.tcp_seq, shark_packet.tcp_next_seq)
-                    self.packets[j+1].packet_origin = duplicate_packet_index
-                    # print('duplicate', duplicate_packet_index)
-                    # FORMER RETRANSMISSION
-                    # if duplicate_packet_index is not None:
-                    #     # copy all actions as it is TCP retransmission
-                    #     self.packets[j+1].append_modifications(self.packets[duplicate_packet_index].modifications)
-                    #     print(f'{j+1} copied from {duplicate_packet_index}')
-                    #     continue
-                # print('Running  modifiers for ', j+1)
                 self.run_packet_modifiers(shark_packet, self.packets[j+1], {**file_info, 'packet_index': shark_packet.index})
                 if shark_packet.tcp_retransmission:
                     # print('retransmission')
@@ -93,43 +77,30 @@ class ModifierController:
                 # validate packet segments
                 if shark_packet.tcp_segment_indexes:
                     for packet_index in shark_packet.tcp_segment_indexes:
-                        # print('loations', shark_packet.tcp_segment_locations)
                         segment_info = shark_packet.tcp_segment_locations[packet_index]
                         self.packets[packet_index].validate_segments(segment_info.length)
-                        # TODO: rozsirit
-                        # print('UNUSED SEGMENTS', self.packets[packet_index].tcp_unused_segments)
-                        self.packets[packet_index].tcp_segment_used = True
             print("END OF MODIFYING PHASE")
             print("VALIDATING TCP STREAMS")
             self.validate_tcp_streams()
             print("COPYING FILE")
             self.adapter.copy_file()
-            # print(self.streams.keys())
             print("FILE COPIED")
             self.adapter.open_output_file()
             print("Writing changes")
             for key in sorted(self.packets):
                 modifying_packet: PacketModification = self.packets[key]
-                # print('INDEX', modifying_packet.tcp_segment_used)
                 modifying_packet.sort_modification()
-                # if len(modifying_packet.modifications) > 0:
-                #     # print('INDEX ', modifying_packet.packet_index)
                 for modification in modifying_packet.modifications:
-                    # print('modifying', modification.field.field_path)
-                    modification.info()
                     packet_start = modifying_packet.packet_start \
                         if not modification.frame_modification \
                         else modifying_packet.packet_start - TsharkAdapter.PCAP_PACKET_HEADER
                     offset = packet_start + modification.position
                     self.adapter.write_field_data(modification.data, offset)
             print("Writing changes ended")
-            # print(self.streams)
             if self.reset_pools and self.generate_meta_files:
-                # print('SHOULD BE HERE', self.adapter.metadata_file_name)
                 self.write_pool_to_file(self.adapter.metadata_file_name)
         if self.generate_meta_files and not self.reset_pools:
             self.write_pool_to_file(self.adapter.general_metadata_file_name)
-
 
     def find_retransmission_packet(self, stream_index, packet_index, sequence, next_sequence):
         if stream_index not in self.streams:
@@ -140,8 +111,6 @@ class ModifierController:
         return None
 
     def validate_tcp_streams(self):
-        # invalid_streams_packets = [] if self.tcp_stream_strategy == TcpStream.CLEVER.value else \
-        #     [packet['index'] for item in self.streams.items() if item[1]['valid'] is False for packet in item[1]['packets']]
         invalid_streams_packets = [packet['index'] for item in self.streams.items() if item[1]['valid'] is False for packet in item[1]['packets']] \
             if self.tcp_stream_strategy == TcpStream.CLEAR.value else \
             []
@@ -150,7 +119,6 @@ class ModifierController:
             if packet.packet_origin is not None:
                 origin_packet = self.packets[packet.packet_origin]
                 modifications = origin_packet.get_tcp_and_after_tcp_modifications()
-                # print("HAPPENING AND MODIFICATIONS", modifications)
                 packet.append_modifications(modifications)
             if self.tcp_stream_strategy == TcpStream.NONE:
                 continue
@@ -159,20 +127,11 @@ class ModifierController:
                 packet.remove_all_modifications_after_tcp()
                 packet.add_tcp_payload_clear_modification()
             else:
-                # if not packet.tcp_segment_used:
                 if packet.tcp_clear_segments:
-                    # print('YOLO', packet.packet_index)
-                    # packet.add_tcp_segment_clear_modification()
                     packet.add_tcp_segments_clear_modifications()
                 if packet.tcp_unknown:
                     packet.remove_all_modifications_after_tcp()
                     packet.add_tcp_payload_clear_modification()
-                # if not packet.tcp_segment_used:
-                #     print(packet.packet_index)
-                #     packet.add_tcp_segment_clear_modification()
-                # if packet.tcp_unknown:
-                #     packet.remove_all_modifications_after_tcp()
-                #     packet.add_tcp_payload_clear_modification()
 
     def run_packet_modifiers(self, packet: Packet, packet_modification: PacketModification, file_info):
         for rule in self.parsed_rules:
@@ -220,14 +179,6 @@ class ModifierController:
             return packet.tcp_reassembled_data
         return packet.packet_bytes
 
-    def __get_method(self, instance, method_name, field):
-        try:
-            attr = getattr(instance, method_name)
-            return attr
-        except AttributeError:
-            print(f"Could not load method {method_name} for field '{field}'", file=sys.stderr)
-            sys.exit(1)
-
     def __prepare_rules(self, rules) -> List[Rule]:
         parsed_rules = []
         for i, rule in enumerate(rules):
@@ -255,15 +206,6 @@ class ModifierController:
             class_info = self.custom_classes[group_name]
             assert class_name == class_info['class_name'], f"Class name and method must match for shared `value_group`, {group_name}"
         return self.custom_classes[group_name]
-
-    def unused_rules(self):
-        return list(
-            map(lambda rule: rule.field, filter(lambda rule: rule.unused(), self.parsed_rules))
-        )
-
-    def rules_info(self):
-        for rule in self.parsed_rules:
-            rule.print_rule()
 
     def pools_dump(self):
         pool_info = {}

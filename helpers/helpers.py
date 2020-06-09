@@ -7,7 +7,7 @@ from importlib import import_module
 from typing import Tuple, Union, List
 
 
-from helpers.ip_class import IpClass
+from enums.ip_class_enum import IpClass
 
 from lorem.text import TextLorem
 

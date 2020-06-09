@@ -10,7 +10,7 @@ from classes.packet import Packet
 from classes.pool import SharedPool
 from classes.rule import Rule
 from classes.tshark_adapter import TsharkAdapter
-from classes.tcp_stream_enum import TcpStream
+from enums.tcp_stream_enum import TcpStream
 
 
 class ModifierController:

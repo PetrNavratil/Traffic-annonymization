@@ -1,7 +1,7 @@
 import argparse
 import yaml
 
-from classes.tcp_stream_enum import TcpStream
+from enums.tcp_stream_enum import TcpStream
 
 
 class Parser:

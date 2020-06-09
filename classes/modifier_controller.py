@@ -2,27 +2,22 @@ import json
 import sys
 from typing import List, Dict, Union
 
-from jsonslicer import JsonSlicer
-
-from helpers.basic_modifier import BasicModifier
 from helpers.helpers import load_modifier_class, modifier_class_name
-from helpers.modification import FieldModification
-from helpers.packet_field import PacketField
-from helpers.packet_modification import PacketModification
-from helpers.packet_shark import SharkPacket
-from helpers.pool import SharedPool
-from helpers.rule import Rule
-from helpers.tshark_adapter import TsharkAdapter
-from parser.tcp_stream_enum import TcpStream
+from classes.field_modification import FieldModification
+from classes.packet_field import PacketField
+from classes.packet_modification import PacketModification
+from classes.packet import Packet
+from classes.pool import SharedPool
+from classes.rule import Rule
+from classes.tshark_adapter import TsharkAdapter
+from classes.tcp_stream_enum import TcpStream
 
 
-class ModifierSharkController:
+class ModifierController:
 
-    def __init__(self, rules, adapter: TsharkAdapter, logger, tcp_stream_strategy, reset_pools, generate_meta_files, search_all_protocols):
+    def __init__(self, rules, adapter: TsharkAdapter, tcp_stream_strategy, reset_pools, generate_meta_files, search_all_protocols):
         self.rules = rules
-        self.modifier = BasicModifier()
         self.custom_classes = {}
-        self.logger = logger
         self.pools = {}
         self.parsed_rules = self.__prepare_rules(rules)
         self.adapter = adapter
@@ -53,7 +48,7 @@ class ModifierSharkController:
             file_info = self.adapter.get_file_additional_info()
             for j, a in enumerate(packets):
                 # print('PACKET', j+1)
-                shark_packet = SharkPacket(a, self.parsed_rules, j+1, self.search_all_protocols)
+                shark_packet = Packet(a, self.parsed_rules, j + 1, self.search_all_protocols)
                 if shark_packet.is_tcp:
                     if shark_packet.tcp_stream not in self.streams:
                         self.streams[shark_packet.tcp_stream] = {
@@ -179,7 +174,7 @@ class ModifierSharkController:
                 #     packet.remove_all_modifications_after_tcp()
                 #     packet.add_tcp_payload_clear_modification()
 
-    def run_packet_modifiers(self, packet: SharkPacket, packet_modification: PacketModification, file_info):
+    def run_packet_modifiers(self, packet: Packet, packet_modification: PacketModification, file_info):
         for rule in self.parsed_rules:
             fields = packet.get_packet_field(rule.field)
             if fields is None:
@@ -218,7 +213,7 @@ class ModifierSharkController:
                 else:
                     packet_modification.add_modification(field_modification)
 
-    def __get_bytes_for_modification(self, packet: SharkPacket, field: PacketField) -> bytearray:
+    def __get_bytes_for_modification(self, packet: Packet, field: PacketField) -> bytearray:
         if field.frame_field:
             return packet.packet_header
         if field.is_segmented:
@@ -244,7 +239,7 @@ class ModifierSharkController:
             else:
                 self.pools[pool_key] = SharedPool(field, modifier['instance'].transform_output_value)
             parsed_rules.append(
-                Rule(field, rule, modifier['instance'], self.pools[pool_key], self.logger, i)
+                Rule(field, rule, modifier['instance'], self.pools[pool_key], i)
             )
         return parsed_rules
 

@@ -1,4 +1,4 @@
-from helpers.packet_field import PacketField
+from classes.packet_field import PacketField
 
 
 class FieldModification:

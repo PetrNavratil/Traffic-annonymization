@@ -1,7 +1,7 @@
 from typing import List
 import operator
 
-from helpers.modification import FieldModification
+from classes.field_modification import FieldModification
 
 
 class PacketModification:

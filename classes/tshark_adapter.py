@@ -98,7 +98,7 @@ class TsharkAdapter:
         if self.file_index < len(self.file_names):
             self.close_output_file()
             self.file_name = self.file_names[self.file_index]
-            self.output_file_name = self.file_name.replace('.pcap', '.altered.pcap')
+            self.output_file_name = self.file_name.replace('.pcap', '.anonym.pcap')
             self.metadata_file_name = self.get_metadata_file_name()
             self.file_index += 1
             self.endianness, self.nano_resolution = self.get_pcap_info()

@@ -1,4 +1,4 @@
-from helpers.pool import SharedPool
+from classes.pool import SharedPool
 from interfaces.modifier import Modifier
 
 
@@ -16,14 +16,13 @@ class Rule:
         'stream_unique': False
     }
 
-    def __init__(self, field, rule, method: Modifier, pool: SharedPool, logger, order):
+    def __init__(self, field, rule, method: Modifier, pool: SharedPool, order):
         self.appearance = 0
         self.field = field
         self.field_path = self.parse_rule_path(field)
         self.params = self.validate_params(rule)
         self.method = method
         self.pool = pool
-        self.logger = logger
         self.order = order
         self.method.transform_exclude_include(self.params['exclude'], self.params['include'], self.params['additional'])
 
@@ -51,8 +50,6 @@ class Rule:
                 continue
             else:
                 break
-        modified_value_hex = modified_value.hex()
-        self.logger.log(self.field, hex_value, modified_value_hex)
         self.pool.set_value(lookup_value, modified_value)
         return modified_value
 

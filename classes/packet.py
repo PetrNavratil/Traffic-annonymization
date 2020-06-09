@@ -2,10 +2,10 @@ import sys
 from typing import Union, List, Dict
 from copy import deepcopy
 
-from helpers.packet_field import PacketField
+from classes.packet_field import PacketField
 
 
-class SharkPacket:
+class Packet:
 
     def __init__(self, packet, rules, index, search_all_protocols):
         self.index = index

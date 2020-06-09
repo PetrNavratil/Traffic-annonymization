@@ -1,16 +1,13 @@
-from helpers.modifier_shark_controller import ModifierSharkController
-from helpers.tshark_adapter import TsharkAdapter
-from logger.logger import Logger
-from parser.config_parser import ConfigParser
+from classes.modifier_controller import ModifierController
+from classes.tshark_adapter import TsharkAdapter
+from classes.parser import Parser
 
 if __name__ == '__main__':
-    parser = ConfigParser()
-    logger = Logger(parser.verbose)
+    parser = Parser()
     adapter = TsharkAdapter(parser.file_names)
-    controller = ModifierSharkController(
+    controller = ModifierController(
         parser.get_rules_config(),
         adapter,
-        logger,
         parser.tpc_stream_strategy,
         parser.reset_pools,
         parser.generate_meta_files,

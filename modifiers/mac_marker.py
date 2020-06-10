@@ -4,6 +4,12 @@ from interfaces.modifier import Modifier
 
 
 class MACMarker(Modifier):
+    """
+    Modifikator nahradi MAC adresu predem definovanou hodnotou pravidla `value`.
+    :value MAC adresa v hexa notaci
+    Priklad
+    value: 'ff:ff:ff:ff:ff:ff'
+    """
 
     def __init__(self):
         super().__init__()

@@ -7,6 +7,12 @@ from modifiers.ip_marker import IPMarker
 
 
 class IPPrefixPreservation(IPMarker):
+    """
+    Modifikator pouziva algoritmus CryptoPAn pro permutaci vstupnich IP adres.
+    Modifikovane IP adresy, ktere sdili prefix pred anonymizaci, jej sdili i po anonymizaci, pricemz hostid je nahodny.
+    napr -  192.168.0.1  -> 222.144.3.55
+            192.168.0.10 -> 222.144.3.78
+    """
 
     def __init__(self):
         super().__init__()

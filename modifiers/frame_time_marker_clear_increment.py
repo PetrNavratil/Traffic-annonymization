@@ -4,6 +4,12 @@ from modifiers.frame_time_marker import FrameTimeMarker
 
 
 class FrameTimeMarkerClearIncrement(FrameTimeMarker):
+    """
+    Modifikator vynuluje prvni casove razitko a k dalsimu pricte prirustek definovany ve `value`
+    :value - casovy prirustek sekundy.mili/nano sekundy
+    Priklad
+    value: 0.500000
+    """
 
     def modify_field(self, original_value, value, additional_parameters) -> bytearray:
         if self.start_time is None:

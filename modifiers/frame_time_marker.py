@@ -4,6 +4,12 @@ from interfaces.modifier import Modifier
 
 
 class FrameTimeMarker(Modifier):
+    """
+    Modifikator nastavi vsechna casova razitka na hodnotu `value` pravidla
+    value: - casove razitko sekundy.mili/nano sekundy
+    Priklad
+    value: 0.500000
+    """
 
     def __init__(self):
         super().__init__()

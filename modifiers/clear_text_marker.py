@@ -2,6 +2,9 @@ from modifiers.text_marker import TextMarker
 
 
 class ClearTextMarker(TextMarker):
+    """
+    Modifikator nahradi text nulami
+    """
 
     def __init__(self):
         super().__init__()

@@ -2,6 +2,9 @@ from modifiers.number_marker import NumberMarker
 
 
 class ClearTextMarker(NumberMarker):
+    """
+    Modifikator nahradi cislo nulami
+    """
 
     def __init__(self):
         super().__init__()

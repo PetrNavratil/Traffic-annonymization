@@ -3,6 +3,9 @@ from interfaces.modifier import Modifier
 
 
 class ClearMarker(Modifier):
+    """
+    Modifikator nahradi vsechna data atributu nulami
+    """
 
     def __init__(self):
         super().__init__()

@@ -4,6 +4,12 @@ from interfaces.modifier import Modifier
 
 
 class IPMarker(Modifier):
+    """
+    Modifikator nahradi IP adresu predem definovanou hodnotou pravidla `value`.
+    :value IP adresa teckove notace (napr. 255.255.255.255)
+    Priklad
+    value: '255.255.255.255'
+    """
 
     def __init__(self):
         super().__init__()

@@ -5,6 +5,9 @@ from interfaces.modifier import Modifier
 
 
 class NumberRandom(Modifier):
+    """
+    Modifikator nahradi cislo atributu za nahodnou hodnotu. Delka bytu puvodniho cisla je zachovana.
+    """
 
     def modify_field(self, original_value, value, additional_parameters) -> bytearray:
         return bytearray(os.urandom(len(original_value)))

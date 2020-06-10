@@ -1,16 +1,23 @@
 from helpers.helpers import string_to_byte_array, generate_random_text, validate_string_field, \
-    generate_prefixed_marker_text
+    generate_prefixed_marker_text, byte_array_to_string
 from helpers.validator import Validator
 from interfaces.modifier import Modifier
 
 
 class TextRandom(Modifier):
+    """
+    Modifikator nahradi textovou hodnotu za nahodny text.
+    """
 
     def __init__(self):
         super().__init__()
+        # hodnota, ktera je vzdy doplnena na konec retezce
         self.suffix = None
+        # hodnota, ktera je vzdy doplnena na zacatek retezce
         self.prefix = None
+        # oddelovac pro metody zachovavajici prefix, napr. HTTP preserve prefix
         self.delimiter = None
+        # delka pro zachovani prefixu
         self.prefix_length = None
 
     def modify_field(self, original_value, value, additional_parameters) -> bytearray:
@@ -29,3 +36,6 @@ class TextRandom(Modifier):
 
     def transform_exclude_include_method(self, additional_params):
         return Validator.no_transform, {}
+
+    def transform_output_value(self, value: bytearray):
+        return byte_array_to_string(value)

@@ -1,10 +1,14 @@
-from helpers.helpers import string_to_byte_array, validate_string_field, generate_prefixed_marker_text, \
-    dns_cname_string_to_byte_array, dns_cname_byte_array_to_string
-from helpers.validator import Validator
+from helpers.helpers import  validate_string_field, dns_cname_string_to_byte_array, dns_cname_byte_array_to_string
 from modifiers.text_marker import TextMarker
 
 
 class DnsNameMarker(TextMarker):
+    """
+    Modifikator nahradi domenove jmeno statickym jmenem uvedenem v anonymizacnim pravidle jako "value"
+    value: domenove jmeno
+    Priklad:
+    value: google.com
+    """
 
     def __init__(self):
         super().__init__()

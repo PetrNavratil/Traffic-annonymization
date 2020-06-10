@@ -4,6 +4,12 @@ from modifiers.text_random import TextRandom
 
 
 class TextMarker(TextRandom):
+    """
+    Modifikator nahradi textovou hodnotu za definovanou hodnotu atributu `value` anonymizacniho pravidla.
+    :value - nova hodnota retezce
+    Priklad:
+    value: 'text marker'
+    """
 
     def __init__(self):
         super().__init__()

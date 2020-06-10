@@ -44,7 +44,8 @@ class Rule:
                 continue
             else:
                 break
-        self.pool.set_value(lookup_value, modified_value)
+        if self.method.store_value:
+            self.pool.set_value(lookup_value, modified_value)
         return modified_value
 
     def validate_params(self, params):

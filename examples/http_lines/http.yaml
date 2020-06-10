@@ -1,0 +1,22 @@
+# Demonstrace anonymizace HTTP
+# Prvni pravidlo modifikuje User-Agent nahodnym textem, ktery je nahrazeny druhym pravidlem
+tcp_stream: 'none'
+reset_pools: true
+generate_meta_files: true
+search_all_protocols: false
+rules:
+  -
+      field: http.request.line
+      modifier: HttpTextRandomPreservePrefix
+      include:
+        value: ['Host', 'User-Agent']
+        validation: 'prefix'
+
+  -
+      field: http.request.line
+      modifier: HttpTextMarkerPreservePrefix
+      value: 'Druha modifikace'
+      include:
+        value: ['User-Agent']
+        validation: 'prefix'
+

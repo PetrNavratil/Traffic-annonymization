@@ -2,7 +2,7 @@
 Autor: Petr Navratil (xnavra53)
 Rok: 2019/2020
 """
-from helpers.helpers import string_mac_to_byte_array
+from helpers.helpers import string_mac_to_byte_array, byte_array_mac_to_string
 from helpers.validator import Validator
 from interfaces.modifier import Modifier
 
@@ -27,3 +27,6 @@ class MACMarker(Modifier):
 
     def transform_exclude_include_method(self, additional_params):
         return Validator.no_transform, {}
+
+    def transform_output_value(self, value: bytearray):
+        return byte_array_mac_to_string(value)

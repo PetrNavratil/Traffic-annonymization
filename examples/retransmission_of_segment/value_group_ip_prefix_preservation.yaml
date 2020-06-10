@@ -1,0 +1,26 @@
+# Anonymizace TLS komunikace s duplikatnim TCP paketem
+# Payload TLS zpravy je odstranen a vsechny typy zprav (content type) s hodnotou 22 jsou nastaveny na 23
+tcp_stream: 'clever'
+reset_pools: true
+generate_meta_files: true
+search_all_protocols: false
+rules:
+  -
+      field: ip.dst
+      modifier: IPPrefixPreservation
+      exclude: ['255.255.255.255', '0.0.0.0']
+      value_group: 'IP'
+  -
+      field: ip.src
+      modifier: IPPrefixPreservation
+      exclude: ['255.255.255.255', '0.0.0.0']
+      value_group: 'IP'
+  -
+      field: tls.handshake
+      modifier: ClearMarker
+  -
+      field: tls.record.content_type
+      modifier: NumberMarker
+      value: 23
+      include: [22]
+

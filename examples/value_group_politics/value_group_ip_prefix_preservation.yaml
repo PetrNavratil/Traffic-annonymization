@@ -1,0 +1,21 @@
+# Anonymizace zdrojove a cilove IP adresy algoritmem PrefixPreservation se sdilenym poolem
+tcp_stream: 'clever'
+reset_pools: true
+generate_meta_files: true
+search_all_protocols: false
+rules:
+  -
+      field: ip.dst
+      modifier: IPPrefixPreservation
+      exclude: ['255.255.255.255', '0.0.0.0']
+      value_group: 'IP'
+  -
+      field: ip.src
+      modifier: IPPrefixPreservation
+      exclude: ['255.255.255.255', '0.0.0.0']
+      value_group: 'IP'
+  -
+      field: dhcp.ip.your
+      modifier: IPPrefixPreservation
+      exclude: ['255.255.255.255', '0.0.0.0']
+      value_group: 'IP'

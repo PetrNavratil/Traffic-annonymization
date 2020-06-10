@@ -163,11 +163,11 @@ class Packet:
             return []
         if self.tcp_has_segment:
             fields = [deepcopy(item) for item in self.tcp_segment_fields]
-            # definitely end
+            # segment je na konci payloadu
             if len(self.tcp_segment_fields) == 1:
                 if self.tcp_segment_fields[0].position != self.tcp_payload_field.position:
                     return fields
-                # can be start but also whole packet
+                # segment je na zacatku paketu a muze byt pres cely payload
                 else:
                     if self.last_protocol_parsed:
                         last_protocol_field = self.__get_last_protocol_field(packet)
@@ -175,9 +175,9 @@ class Packet:
                             fields[0].length = last_protocol_field.position - self.tcp_segment_fields[0].position
                             return fields
                         else:
-                        # objekt obsahuje pouze slouceny protokol, tudiz, musel byt pouzity cely segmnent, jinak by se to chytlo uz nahore
+                        # objekt obsahuje pouze slouceny protokol, tudiz, musel byt pouzity cely segmnent
                             return []
-                    #     nothing but TCP - only payload - segment is all over payload
+                    # segment je pres cely payload
                     else:
                         return self.tcp_segment_fields.copy()
             else:

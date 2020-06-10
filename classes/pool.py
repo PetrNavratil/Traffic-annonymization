@@ -21,9 +21,6 @@ class SharedPool:
     def set_value(self, key, value):
         self.pool.update([(key, value)])
 
-    def append_field(self, field):
-        self.used_by.append(field)
-
     def reset_pool(self):
         self.pool = {}
 
@@ -33,12 +30,12 @@ class SharedPool:
     def transform(self, delimiter: str):
         data = {}
         for key, value in self.pool.items():
-            prefix, valid_key = self.get_transformed_key(key, delimiter)
+            prefix, valid_key = self.__get_transformed_key(key, delimiter)
             transformed_key = self.transform_method(bytearray().fromhex(valid_key))
             data[prefix + str(transformed_key)] = self.transform_method(value)
         self.pool = data
 
-    def get_transformed_key(self, key, delimiter):
+    def __get_transformed_key(self, key, delimiter):
         result = key.split(delimiter)
         if len(result) == 1:
             return '', result[0]

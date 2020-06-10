@@ -4,24 +4,11 @@ generate_meta_files: true
 search_all_protocols: false
 rules:
   -
-      field: ip.src
-      modifier: IPRandom
-      include: []
-      exclude: []
-      value_group: 'IP'
-  -
-      field: ip.dst
-      modifier: IPRandom
-      include: []
-      exclude: []
-      value_group: 'IP'
-
-  -
       field: udp.srcport
       modifier: NumberRandom
       include: []
       exclude: []
-      value_group: 'PORTY'
+      value_group: 'PORTS'
       stream_unique: true
 
   -
@@ -29,7 +16,7 @@ rules:
       modifier: NumberRandom
       include: []
       exclude: []
-      value_group: 'PORTY'
+      value_group: 'PORTS'
       stream_unique: true
 
   -
@@ -37,7 +24,7 @@ rules:
       modifier: NumberRandom
       include: []
       exclude: []
-      value_group: 'PORTY'
+      value_group: 'PORTS'
       stream_unique: true
 
   -
@@ -45,6 +32,6 @@ rules:
       modifier: NumberRandom
       include: []
       exclude: []
-      value_group: 'PORTY'
+      value_group: 'PORTS'
       stream_unique: true
 

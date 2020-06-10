@@ -1,0 +1,143 @@
+# Politika ma fatalni dopad na data
+tcp_stream: 'clever'
+reset_pools: true
+generate_meta_files: true
+search_all_protocols: false
+rules:
+  -
+      field: http.host
+      modifier: HttpTextRandom
+  -
+      field: eth.dst
+      modifier: MACRandomPreserveFlags
+      include: []
+      exclude: []
+      value_group: 'ETH'
+
+  -
+      field: eth.src
+      modifier: MACRandomPreserveFlags
+      include: []
+      exclude: []
+      value_group: 'ETH'
+
+  -
+      field: arp.src.hw_mac
+      modifier: MACRandomPreserveFlags
+      value_group: 'ETH'
+
+  -
+      field: arp.dst.hw_mac
+      modifier: MACRandomPreserveFlags
+      value_group: 'ETH'
+
+  -
+      field: ip.dst
+      modifier: IPPrefixPreservation
+      value: 24
+      include: []
+      exclude: []
+      value_group: 'IP'
+
+  -
+      field: ip.src
+      modifier: IPPrefixPreservation
+      include: []
+      exclude: []
+      value_group: 'IP'
+
+  -
+      field: arp.src.proto_ipv4
+      modifier: IPPrefixPreservation
+      include: []
+      exclude: []
+      value_group: 'IP'
+
+  -
+      field: arp.dst.proto_ipv4
+      modifier: IPPrefixPreservation
+      include: []
+      exclude: []
+      value_group: 'IP'
+
+  -
+      field: udp.srcport
+      modifier: NumberRandom
+      include: []
+      exclude: [80, 8080]
+  -
+      field: udp.srcport
+      modifier: NumberMarker
+      value: 80
+      include: [8080]
+  -
+      field: udp.dstport
+      modifier: NumberRandom
+      include: []
+      exclude: [80, 8080]
+
+  -
+      field: udp.dstport
+      modifier: NumberMarker
+      value: 80
+      include: [8080]
+
+  -
+      field: tcp.srcport
+      modifier: NumberRandom
+      include: []
+      exclude: [8080, 80]
+  -
+      field: tcp.srcport
+      modifier: NumberMarker
+      value: 80
+      include: [8080]
+  -
+      field: tcp.dstport
+      modifier: NumberRandom
+      include: []
+      exclude: [80, 8080]
+
+  -
+      field: tcp.dstport
+      modifier: NumberMarker
+      value: 80
+      include: [8080]
+
+  -
+      field: frame.time_epoch
+      modifier: FrameTimeMarkerClearIncrement
+      value: '0.500000'
+      include: []
+      exclude: []
+
+  -
+      field: http.user_agent
+      modifier: HttpTextRandomPreservePrefix
+      include: []
+      exclude: []
+
+  -
+      field: tls.handshake.certificates
+      modifier: ClearMarker
+      include: []
+      exclude: []
+
+  -
+      field: igmp.maddr
+      modifier: IPMarker
+      value: '255.255.255.255'
+      include: []
+      exclude: []
+  -
+      field: ip.ttl
+      modifier: NumberMarker
+      value: 0
+
+  -
+      field: tcp.window_size_value
+      modifier: NumberMarker
+      value: 0
+  -
+      field: tls.app_data
+      modifier: ClearMarker

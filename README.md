@@ -41,14 +41,14 @@ Nástroj je možné spustit příkazem `python3 main.py`, přičemž pro svoje s
  
 Příklad spuštění
 
-`python3 main.py --config ../examples/politics/ip.yaml --files ../examples/data/ip.pcap`
+`python3 main.py --config ../examples/http_lines/http.yaml --files ../examples/http_lines/http.pcap`
  
 Anonymizované soubory se nacházejí na stejném místě, jako vstupní soubory. Vstupní soubor je zkopírován a doplněn o `.anonym`
 do původního jména. 
 
 Příklad:
 
-`../examples/data/ip.pcap` -> `../examples/data/ip.anonym.pcap`
+`../examples/http_lines/http.pcap` -> `../examples/http_lines/http.anonym.pcap`
 
 Meta soubory anonymizace jsou vygenerovány do složky `meta` v adresáři aplikace. 
  
@@ -98,7 +98,7 @@ Princip vyhodnocení je `exclude` a `include` je následující. Nejdříve dojd
 vyloučena z anonymizace. Pokud není vyloučena, dochází k ověření zda je k validaci připuštěna, hodnoty `include`. Pokud
 nejsou hodnoty `include` definovány, je hodnota připuštěna k anonymizaci. 
 
-**Příklady politik je možné nalézt v adresáři `examples/politics`**.
+**Příklady politik je možné nalézt v adresáři `examples`**.
 
 # Modifikátory
 Modifikátory jsou zodpovědné za anonymizaci a validaci hodnot anonymizovaných atributů, přičemž jeden modifikátor představuje

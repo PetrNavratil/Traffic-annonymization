@@ -15,7 +15,6 @@ class Rule:
         'value': None,
         'exclude': [],
         'include': [],
-        'validator': None,
         'additional': {},
         'stream_unique': False
     }

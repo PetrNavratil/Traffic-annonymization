@@ -1,0 +1,38 @@
+# Anonymizace portu na nahodne v ramci jednotlivych TCP/UDP toku
+tcp_stream: 'clever'
+reset_pools: true
+generate_meta_files: true
+search_all_protocols: false
+rules:
+  -
+      field: udp.srcport
+      modifier: NumberRandom
+      include: []
+      exclude: []
+      value_group: 'PORTS'
+      stream_unique: true
+
+  -
+      field: udp.dstport
+      modifier: NumberRandom
+      include: []
+      exclude: []
+      value_group: 'PORTS'
+      stream_unique: true
+
+  -
+      field: tcp.srcport
+      modifier: NumberRandom
+      include: []
+      exclude: []
+      value_group: 'PORTS'
+      stream_unique: true
+
+  -
+      field: tcp.dstport
+      modifier: NumberRandom
+      include: []
+      exclude: []
+      value_group: 'PORTS'
+      stream_unique: true
+

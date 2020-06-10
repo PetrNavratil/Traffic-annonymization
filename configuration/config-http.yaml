@@ -6,432 +6,143 @@ rules:
   -
       field: http.host
       modifier: HttpTextRandom
-#  -
-#      field: eth.dst
-#      modifier: MACRandomPreserveFlags
-#      include: []
-#      exclude: []
-#      value_group: 'ETH'
-#
-#  -
-#      field: eth.src
-#      modifier: MACRandomPreserveFlags
-#      include: []
-#      exclude: []
-#      value_group: 'ETH'
-#
-#  -
-#      field: arp.src.hw_mac
-#      modifier: MACRandomPreserveFlags
-#      value_group: 'ETH'
-#
-#  -
-#      field: arp.dst.hw_mac
-#      modifier: MACRandomPreserveFlags
-#      value_group: 'ETH'
-#
+  -
+      field: eth.dst
+      modifier: MACRandomPreserveFlags
+      include: []
+      exclude: []
+      value_group: 'ETH'
+
+  -
+      field: eth.src
+      modifier: MACRandomPreserveFlags
+      include: []
+      exclude: []
+      value_group: 'ETH'
+
+  -
+      field: arp.src.hw_mac
+      modifier: MACRandomPreserveFlags
+      value_group: 'ETH'
+
+  -
+      field: arp.dst.hw_mac
+      modifier: MACRandomPreserveFlags
+      value_group: 'ETH'
+
   -
       field: ip.dst
-      modifier: ClearIPMarker
+      modifier: IPPrefixPreservation
       value: 24
       include: []
       exclude: []
       value_group: 'IP'
-#
-#  -
-#      field: ip.src
-#      modifier: IPPrefixPreservation
-#      value: 24
-#      include: []
-#      exclude: []
-#      value_group: 'IP'
-#
-#  -
-#      field: arp.src.proto_ipv4
-#      modifier: IPPrefixPreservation
-#      include: []
-#      exclude: []
-#      value_group: 'IP'
-#
-#  -
-#      field: arp.dst.proto_ipv4
-#      modifier: IPPrefixPreservation
-#      include: []
-#      exclude: []
-#      value_group: 'IP'
-#
-#  -
-#      field: udp.srcport
-#      modifier: NumberRandom
-#      value_group: 'src_port'
-#      include: []
-#      exclude: []
-#  -
-#      field: udp.dstport
-#      modifier: NumberRandom
-#      value_group: 'src_port'
-#      include: []
-#      exclude: []
-#
-#  -
-#      field: tcp.srcport
-#      modifier: NumberRandom
-#      value_group: 'src_port'
-#      include: []
-#      exclude: []
-#  -
-#      field: tcp.dstport
-#      modifier: NumberRandom
-#      value_group: 'src_port'
-#      include: []
-#      exclude: []
-#
-#  -
-#      field: frame.time_epoch
-#      modifier: FrameTimeMarkerClearIncrement
-#      value: '0.500000'
-#      include: []
-#      exclude: []
-#
-#  -
-#      field: http.request.line
-#      modifier: HttpTextRandomPreservePrefix
-#      include:
-#        validation: 'prefix'
-#        value: ['SOAPAction']
-#      exclude: []
-#
-#  -
-#      field: http.user_agent
-#      modifier: HttpTextRandomPreservePrefix
-#      include: []
-#      exclude: []
-#
-#  -
-#      field: http.file_data
-#      modifier: ClearMarker
-#      include: []
-#      exclude: []
-#
-#  -
-#      field: http.host
-#      modifier: HttpTextRandomPreservePrefix
-#      include: []
-#      exclude: []
-#  -
-#      field: http.file_data
-#      modifier: ClearMarker
-#      include: []
-#      exclude: []
-#
-#  -
-#      field: tls.handshake.certificates
-#      modifier: ClearMarker
-#      include: []
-#      exclude: []
-#
-#  -
-#      field: igmp.maddr
-#      modifier: ClearIPMarker
-#      include: []
-#      exclude: []
 
-#  -
-#      field: dns.qry.name
-#      modifier: DnsNameMarker
-#      value: 'PNPN'
-#      include: []
-#      exclude: []
-#  -
-#      field: ip.src
-#      modifier: IPMarkerPreserveNPrefix
-#      value_group: 'IP'
-#      params:
-#          value:
-#            value: '255.255'
-#            preserve: 16
-#          exclude: []
-#          include: []
-#          additional:
-#            validation: 'prefix'
-#            mine: 'Hello'
-#            you: 'doing'
-#            packet: 3
-#  -
-#      field: ip.src
-#      modifier: IPMarker
-#      params:
-#          value: '255.255.255.255'
-#          exclude: []
-#          include: []
-#          additional:
-#            mine: 'Hello'
-#            you: 'doing'
-#            packet: 3
-#  -
-#      field: dns.a
-#      modifier: ip_random
-#      params:
-#          value: 'pn.yoloswagger.ns.com'
-#          exclude: []
-#          include: []
-#          additional:
-#            mine: 'Hello'
-#            you: 'doing'
-#            packet: 3
-#  - field: dns.qry.type
-#    modifier: default_number_marker
-#    params:
-#      value: 2
-#      exclude: []
-#      include: []
-#      additional:
-#        mine: 'Hello'
-#        you: 'doing'
-#        packet: 3
-#  -
-#      field: frame.time_epoch
-#      modifier: FrameTimeMarkerIncrement
-#      params:
-#          value: '0.100000'
-#          exclude: []
-#          include: []
-#          additional:
-#            mine: 'Hello'
-#            you: 'doing'
-#            packet: 3
-#  -
-#      field: frame.time_epoch
-#      modifier: FrameTImeMarkerClearIncrement
-#      value: '0.500000'
-#      exclude: []
-#      include: []
-#  -
-#      field: tls.handshake.server_point
-#      modifier: default_clear_all
-#      params:
-#          value: ''
-#          exclude: []
-#          include: []
-##  -
-#      field: tls.record
-#      modifier: default_clear_all
-#      params:
-#          value: ''
-#          exclude: []
-#          include: []
-#  -
-#      field: http.request.line
-#      modifier: HttpTextMarkerPreservePrefix
-#      value: 'PNTest'
+  -
+      field: ip.src
+      modifier: IPPrefixPreservation
+      include: []
+      exclude: []
+      value_group: 'IP'
 
-#  -
-#      field: http.server
-#      modifier: HttpTextMarkerPreservePrefix
-#      value: 'PNTest'
-#
-#  -
-#      field: ip.ttl
-#      modifier: NumberMarker
-#      value: 0
-#
-#  -
-#      field: tcp.window_size_value
-#      modifier: NumberMarker
-#      value: 0
-#  -
-#      field: tls.app_data
-#      modifier: ClearMarker
-#      value: 0
+  -
+      field: arp.src.proto_ipv4
+      modifier: IPPrefixPreservation
+      include: []
+      exclude: []
+      value_group: 'IP'
 
+  -
+      field: arp.dst.proto_ipv4
+      modifier: IPPrefixPreservation
+      include: []
+      exclude: []
+      value_group: 'IP'
 
+  -
+      field: udp.srcport
+      modifier: NumberRandom
+      include: []
+      exclude: [80, 8080]
+  -
+      field: udp.srcport
+      modifier: NumberMarker
+      value: 80
+      include: [8080]
+  -
+      field: udp.dstport
+      modifier: NumberRandom
+      include: []
+      exclude: [80, 8080]
 
-#  -
-#      field: tls.record.content_type
-#      modifier: default_number_marker
-#      params:
-#          value: '23'
-#          exclude: []
-#          include: []
-#
-#  - field: eth.src
-#    modifier: MACRandomPreserveFlags
-#    value_group: 'ETH'
-#    params:
-#      value: 'ff'
-#      exclude: []
-#      include: []
-#      additional:
-#        validation: 'suffix'
-#
-#  - field: eth.dst
-#    modifier: MACRandomPreserveFlags
-#    value_group: 'ETH'
-#    params:
-#      value: 'ff'
-#      exclude: []
-#      include: []
-#      additional:
-#        validation: 'suffix'
-#  -
-#      field: tls.handshake
-#      modifier: default_clear_all
-#      params:
-#          value: '23'
-#          exclude: []
-#          include: []
-##  -
-##      field: ip.version
-##      modifier: default_number_marker
-##      params:
-##          value: '8'
-##          exclude: []
-##          include: []
-#  -
-#      field: http.host
-#      modifier: HttpTextMarker
-#      params:
-#          value: 'Host: PN mega dloooooooooohy texxt'
-#          exclude: []
-#          include: []
-#  -
-#      field: http.server
-#      modifier: default_http_marker
-#      params:
-#          value: 'Server: CHANGE TEST'
-#          exclude: []
-#          include: []
-#  -
-#      field: tls.record.version
-#      modifier: default_number_marker
-#      params:
-#          value: '256'
-#          exclude: []
-#  -
-#      field: dhcp.type
-#      modifier: default_number_marker
-#      params:
-#          value: '2'
-#          exclude: []
-#          include: []
-#  -
-#      field: dhcp.ip.your
-#      modifier: ip_marker
-#      value_group: 'IP'
-#      params:
-#          value: '255.255.255.255'
-#          exclude: []
-#          include: []
-#  -
-#      field: arp.dst.hw_mac
-#      modifier: eth_marker
-#      value_group: 'ETH'
-#      params:
-#          value: "ff:ff:ff:ff:ff:ff"
-#          exclude: []
-#          include: []
-#  -
-#      field: dhcp.hw.mac_addr
-#      modifier: eth_marker
-#      value_group: 'ETH1'
-#      params:
-#          value: "ff:ff:ff:ff:ff:ff"
-#          exclude: []
-#          include: []
-#  -
-#      field: eth.src
-#      modifier: eth_marker
-#      value_group: 'KVAK'
-#      params:
-#          value: "ff:ff:ff:ff:ff:ff"
-#          exclude: []
-#          include: []
-#  -
-#      field: ip.src
-#      modifier: ip_marker_preserve_n_suffix
-#      value_group: 'IP'
-#      params:
-#        value:
-#          value: '255.255'
-#          preserve_length: 16
-#        exclude: []
-#        include: []
-#  -
-#      field: ip.src
-#      modifier: IPMarker
-#      value_group: 'IP'
-#      params:
-#        value: '244.244.244.244'
-#        exclude: ['192.168.0.0']
-#        include: ['192.168.0.0/16']
-#  -
-#      field: ip.dst
-#      modifier: ip_marker_preserve_n_suffix
-#      value_group: 'IP'
-#      params:
-#        value:
-#          value: '255.255'
-#          preserve_length: 16
-#        exclude: []
-#        include: []
-#  -
-#      field: udp.srcport
-#      modifier: port_random_preserve_group
-#      params:
-#        value: 8
-#        exclude: []
-#        include: []
-#  -
-#      field: udp.dstport
-#      modifier: port_random_preserve_group
-#      params:
-#        value: 8
-#        exclude: []
-#        include: []
-#  -
-#      field: ip.dst
-#      modifier: ip_marker
-#      value_group: 'IP2'
-#      params:
-#        value: '255.255.255.255'
-#        exclude: ['192.168.0.10/16']
-#        include: ['192.168.0.10/16']
-#      field: ip.dst
-#      modifier: ip_random_preserve_class
-#      value_group: 'IP2'
-#      params:
-#        value: "255.255.255.255"
-#        exclude: []
-#        include: []
-#  -
-#      field: ip.dst.adadadada
-#      modifier: ip_marker
-#      value_group: 'IP'
-#      params:
-#        value: "255.255.255.255"
-#        exclude: []
-#        include: []
-#  -
-#      field: ip.dst
-#      modifier: ip_marker
-#      namisto shared_with pridat groupy
-#      shared_with: eth.ip.src
-#      exclude ma nejvyssi prioritu
-#      pokud exclude zakaze, include to nepovoli
-#      params:
-#        value: "255.255.255.255"
-#        exclude: ["192.168.1.1/8", "138.201.81.199"]
-#        pridat include (komunikace pouze na specificke siti)
-# pridat suffix/preffix pro definici zachovavani prefix//suffix pro jine metody nez marker
-# vzdalenost IP address 1.1.1.2 - 1
-# metriky pro IP addresy - obecne anonymiazce - na zaklade toho si domluvit, ktere budeme delat a ktere ne
-# 6235RF - podivat se
-# podivat se opet na tshark/pyshark a praci s byty
-# expotovat jako json a pak s nim pracovat a modifikovat bytove pole
-#
-#  -
-#      field: eth.ip.sad
-#      modifier: ip_marker
-#      params:
-#        value: "255.255.255.255"
-#        exclude: []
+  -
+      field: udp.dstport
+      modifier: NumberMarker
+      value: 80
+      include: [8080]
+
+  -
+      field: tcp.srcport
+      modifier: NumberRandom
+      include: []
+      exclude: [8080, 80]
+  -
+      field: tcp.srcport
+      modifier: NumberMarker
+      value: 80
+      include: [8080]
+  -
+      field: tcp.dstport
+      modifier: NumberRandom
+      include: []
+      exclude: [80, 8080]
+
+  -
+      field: tcp.dstport
+      modifier: NumberMarker
+      value: 80
+      include: [8080]
+
+  -
+      field: frame.time_epoch
+      modifier: FrameTimeMarkerClearIncrement
+      value: '0.500000'
+      include: []
+      exclude: []
+
+  -
+      field: http.user_agent
+      modifier: HttpTextRandomPreservePrefix
+      include: []
+      exclude: []
+
+  -
+      field: http.file_data
+      modifier: ClearMarker
+      include: []
+      exclude: []
+
+  -
+      field: tls.handshake.certificates
+      modifier: ClearMarker
+      include: []
+      exclude: []
+
+  -
+      field: igmp.maddr
+      modifier: IPMarker
+      value: '255.255.255.255'
+      include: []
+      exclude: []
+  -
+      field: ip.ttl
+      modifier: NumberMarker
+      value: 0
+
+  -
+      field: tcp.window_size_value
+      modifier: NumberMarker
+      value: 0
+  -
+      field: tls.app_data
+      modifier: ClearMarker

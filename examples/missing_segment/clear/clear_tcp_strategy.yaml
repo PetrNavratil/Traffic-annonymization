@@ -1,0 +1,28 @@
+# Demonstrace clear strategie TCP streamu
+tcp_stream: 'clear'
+reset_pools: true
+generate_meta_files: true
+search_all_protocols: false
+rules:
+  -
+      field: ip.dst
+      modifier: IPPrefixPreservation
+      exclude: ['255.255.255.255', '0.0.0.0']
+      value_group: 'IP'
+  -
+      field: ip.src
+      modifier: IPPrefixPreservation
+      exclude: ['255.255.255.255', '0.0.0.0']
+      value_group: 'IP'
+
+  -
+      field: eth.src
+      modifier: MACRandomPreserveFlags
+      include: []
+      exclude: []
+
+  -
+      field: eth.dst
+      modifier: MACRandomPreserveFlags
+      include: []
+      exclude: []

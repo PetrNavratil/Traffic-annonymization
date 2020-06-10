@@ -117,13 +117,14 @@ class ModifierController:
         invalid_streams_packets = [packet['index'] for item in self.streams.items() if item[1]['valid'] is False for packet in item[1]['packets']] \
             if self.tcp_stream_strategy == TcpStream.CLEAR.value else \
             []
+        print(invalid_streams_packets, self.tcp_stream_strategy)
 
         for packet in self.packets.values():
             if packet.packet_origin is not None:
                 origin_packet = self.packets[packet.packet_origin]
                 modifications = origin_packet.get_tcp_and_after_tcp_modifications()
                 packet.append_modifications(modifications)
-            if self.tcp_stream_strategy == TcpStream.NONE:
+            if self.tcp_stream_strategy == TcpStream.NONE.value:
                 continue
 
             if self.tcp_stream_strategy == TcpStream.CLEAR.value and packet.packet_index in invalid_streams_packets:
@@ -222,10 +223,6 @@ class ModifierController:
         pool_info = {}
         for pool in self.pools.items():
             pool[1].transform(Rule.STREAM_KEY_DELIMITER)
-            # pool_dump = {
-            #     'meta': self.modifiers[pool[0]].meta,
-            #     'values': pool[1].pool
-            # }
             pool_info.update([(
                 pool[0],
                 {

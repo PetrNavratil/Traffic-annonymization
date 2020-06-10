@@ -1,0 +1,16 @@
+# Demonstrace IP k prefix preservation
+tcp_stream: 'clever'
+reset_pools: true
+generate_meta_files: true
+search_all_protocols: false
+rules:
+  -
+      field: ip.dst
+      modifier: IPRandomPreserveNPrefix
+      value: 16
+  -
+      field: ip.src
+      modifier: IPMarkerPreserveNPrefix
+      value:
+        value: '255.255'
+        preserve: 16

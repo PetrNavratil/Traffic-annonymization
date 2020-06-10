@@ -1,6 +1,9 @@
+"""
+Autor: Petr Navratil (xnavra53)
+Rok: 2019/2020
+"""
 import json
-import sys
-from typing import List, Dict, Union
+from typing import List, Dict
 
 from helpers.helpers import load_modifier_class, modifier_class_name
 from classes.field_modification import FieldModification

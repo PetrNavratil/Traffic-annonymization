@@ -1,3 +1,7 @@
+"""
+Autor: Petr Navratil (xnavra53)
+Rok: 2019/2020
+"""
 from helpers.helpers import  validate_string_field, dns_cname_string_to_byte_array, dns_cname_byte_array_to_string
 from modifiers.text_marker import TextMarker
 

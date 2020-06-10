@@ -1,3 +1,7 @@
+"""
+Autor: Petr Navratil (xnavra53)
+Rok: 2019/2020
+"""
 from helpers.helpers import random_ip_address
 from modifiers.ip_marker import IPMarker
 

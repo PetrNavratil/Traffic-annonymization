@@ -1,3 +1,7 @@
+"""
+Autor: Petr Navratil (xnavra53)
+Rok: 2019/2020
+"""
 from helpers.helpers import number_to_byte_array
 from modifiers.number_random import NumberRandom
 

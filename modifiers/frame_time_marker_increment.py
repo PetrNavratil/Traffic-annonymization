@@ -1,3 +1,7 @@
+"""
+Autor: Petr Navratil (xnavra53)
+Rok: 2019/2020
+"""
 from helpers.helpers import parse_string_time, byte_array_to_timestamp, increment_time_stamp, time_stamp_to_byte_array
 from modifiers.frame_time_marker import FrameTimeMarker
 

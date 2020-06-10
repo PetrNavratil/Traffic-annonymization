@@ -1,3 +1,7 @@
+"""
+Autor: Petr Navratil (xnavra53)
+Rok: 2019/2020
+"""
 from classes.packet_field import PacketField
 
 

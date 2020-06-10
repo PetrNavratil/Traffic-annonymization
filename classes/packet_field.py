@@ -1,9 +1,13 @@
+"""
+Autor: Petr Navratil (xnavra53)
+Rok: 2019/2020
+"""
 import sys
 
 
 class PacketField:
 
-    # only valid field with position 0
+    # only valid fields with position 0
     ETH_DST_PATH = 'eth.dst_raw'
     FRAME_TIME_PATH = 'frame.time_epoch_raw'
 

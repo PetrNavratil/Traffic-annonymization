@@ -1,3 +1,7 @@
+"""
+Autor: Petr Navratil (xnavra53)
+Rok: 2019/2020
+"""
 from helpers.helpers import generate_random_mac_preserve_flags
 from modifiers.mac_random import MACRandom
 

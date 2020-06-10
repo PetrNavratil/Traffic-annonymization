@@ -1,3 +1,7 @@
+"""
+Autor: Petr Navratil (xnavra53)
+Rok: 2019/2020
+"""
 from netaddr import IPNetwork
 
 from helpers.helpers import byte_array_ip_to_string, byte_array_to_number, byte_array_to_string, \

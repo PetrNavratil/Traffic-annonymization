@@ -1,3 +1,7 @@
+"""
+Autor: Petr Navratil (xnavra53)
+Rok: 2019/2020
+"""
 from helpers.helpers import string_ip_to_byte_array, byte_array_ip_to_string
 from helpers.validator import Validator
 from interfaces.modifier import Modifier

@@ -138,3 +138,7 @@ atributu `unique`.
 Aplikace plně závisí na knihovně **YAJL**, která se na některých 64bit zařízeních chování jako 32bit a občas způsobí pád při zpracování velkých čísel. Zpravidla se
 jedná o čísla větší než 32 bitů. K situaci nastává, na mém zařízení, např. při zpracování protokolu `OSPF`. Nástroj TShark v tomto případě generuje pro některé atributy protokolu
 bitové masky o velikosti 64bitů a knihovna YAJL takto velké číslo nedokáže zpracovat. 
+
+
+##### Autor
+Petr Navrátil 2019/2020

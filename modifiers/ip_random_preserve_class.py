@@ -1,3 +1,7 @@
+"""
+Autor: Petr Navratil (xnavra53)
+Rok: 2019/2020
+"""
 from helpers.helpers import generate_random_bits, generate_random_number_in_range, get_ip_class_range
 from modifiers.ip_random import IPRandom
 

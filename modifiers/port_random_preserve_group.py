@@ -1,3 +1,7 @@
+"""
+Autor: Petr Navratil (xnavra53)
+Rok: 2019/2020
+"""
 from helpers.helpers import random_port_from_its_category
 from modifiers.number_marker import NumberMarker
 

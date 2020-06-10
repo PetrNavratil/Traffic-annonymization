@@ -1,3 +1,7 @@
+"""
+Autor: Petr Navratil (xnavra53)
+Rok: 2019/2020
+"""
 from helpers.helpers import string_to_byte_array, validate_string_field, generate_prefixed_marker_text
 from helpers.validator import Validator
 from modifiers.text_random import TextRandom

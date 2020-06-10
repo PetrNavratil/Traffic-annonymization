@@ -1,3 +1,7 @@
+"""
+Autor: Petr Navratil (xnavra53)
+Rok: 2019/2020
+"""
 from helpers.helpers import parse_string_time, time_stamp_to_byte_array
 from helpers.validator import Validator
 from interfaces.modifier import Modifier

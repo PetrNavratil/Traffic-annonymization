@@ -1,3 +1,7 @@
+"""
+Autor: Petr Navratil (xnavra53)
+Rok: 2019/2020
+"""
 from helpers.helpers import HTTP_LINE_PREFIX_DELIMITER
 from modifiers.http_text_marker import HttpTextMarker
 

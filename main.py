@@ -1,3 +1,7 @@
+"""
+Autor: Petr Navratil (xnavra53)
+Rok: 2019/2020
+"""
 from classes.modifier_controller import ModifierController
 from classes.tshark_adapter import TsharkAdapter
 from classes.parser import Parser

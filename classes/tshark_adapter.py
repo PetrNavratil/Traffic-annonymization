@@ -5,6 +5,8 @@ Rok: 2019/2020
 import asyncio
 import os
 import shutil
+import sys
+
 from jsonslicer import JsonSlicer
 
 
@@ -76,6 +78,7 @@ class TsharkAdapter:
 
     def get_pcap_info(self):
         with open(self.file_name, 'rb') as f:
+            print(self.file_name)
             magic_number_array = f.read(4)
             if magic_number_array == TsharkAdapter.PCAP_BYTE_ORDERING_BIG:
                 return 'big', False
@@ -85,6 +88,8 @@ class TsharkAdapter:
                 return 'big', True
             if magic_number_array == TsharkAdapter.PCAP_BYTE_ORDERING_NANO_LITTLE:
                 return 'little', True
+        print(f"Could not parse entry file {self.file_name}", file=sys.stderr)
+        sys.exit(1)
 
     def get_file_additional_info(self):
         return {

@@ -17,8 +17,8 @@ class ModifierController:
 
     def __init__(self, rules, adapter: TsharkAdapter, tcp_stream_strategy, reset_pools, generate_meta_files, search_all_protocols):
         self.rules = rules
-        self.custom_classes = {}
-        self.pools = {}
+        self.modifiers = {}
+        self.pools: Dict[str, SharedPool] = {}
         self.parsed_rules = self.__prepare_rules(rules)
         self.adapter = adapter
         self.packets: Dict[int, PacketModification] = {}
@@ -182,36 +182,54 @@ class ModifierController:
     def __prepare_rules(self, rules) -> List[Rule]:
         parsed_rules = []
         for i, rule in enumerate(rules):
+            pool, new_pool = self.__get_pool(rule, i)
             field = rule['field']
-            pool_key = rule['value_group'] if 'value_group' in rule else field
-            modifier = self.__get_modifier(rule['modifier'], pool_key, rule['modifier'])
-            if pool_key in self.pools:
-                self.pools[pool_key].append_field(field)
-            else:
-                self.pools[pool_key] = SharedPool(field, modifier['instance'].transform_output_value)
+            if new_pool:
+                modifier = self.__get_modifier(rule['modifier'])
+                self.modifiers[pool.used_by] = modifier
+                pool.set_transform_method(modifier.transform_output_value)
             parsed_rules.append(
-                Rule(field, rule, modifier['instance'], self.pools[pool_key], i)
-            )
+                Rule(field, rule, self.modifiers[pool.used_by], pool, i))
         return parsed_rules
 
-    def __get_modifier(self, class_name: Union[str, None], group_name: str, method: str):
-        if group_name not in self.custom_classes:
-            class_instance = load_modifier_class(modifier_class_name(method))()
-            self.custom_classes[group_name] = {
-                'class_name': class_name,
-                'instance': class_instance,
-                'method': method
-            }
+    def __get_pool(self, rule, order):
+        field = rule['field']
+        value_group = 'value_group' in rule
+        pool_key = rule['value_group'] if value_group else field
+        class_name = rule['modifier']
+        if pool_key in self.pools:
+            print('already used')
+            if value_group:
+                print('value group')
+                assert class_name == self.pools[pool_key].class_name, f"Modifier name must match for shared `value_group`, {pool_key}"
+                return self.pools[pool_key], False
+            else:
+                new_key = f'{pool_key}_{order}'
+                self.pools[new_key] = SharedPool(new_key, class_name)
+                print('already used field')
+                return self.pools[new_key], True
         else:
-            class_info = self.custom_classes[group_name]
-            assert class_name == class_info['class_name'], f"Class name and method must match for shared `value_group`, {group_name}"
-        return self.custom_classes[group_name]
+            self.pools[pool_key] = SharedPool(pool_key, class_name)
+            return self.pools[pool_key], True
+
+    def __get_modifier(self, class_name):
+        return load_modifier_class(modifier_class_name(class_name))()
 
     def pools_dump(self):
         pool_info = {}
         for pool in self.pools.items():
             pool[1].transform(Rule.STREAM_KEY_DELIMITER)
-            pool_info.update([(pool[0], pool[1].pool)])
+            # pool_dump = {
+            #     'meta': self.modifiers[pool[0]].meta,
+            #     'values': pool[1].pool
+            # }
+            pool_info.update([(
+                pool[0],
+                {
+                    'meta': self.modifiers[pool[0]].meta,
+                    'values': pool[1].pool
+                }
+            )])
         return pool_info
 
     def write_pool_to_file(self, file_name):

@@ -74,10 +74,12 @@ class Modifier(ABC):
         """
         Metoda je použita aplikací pro transformaci položek exclude a include anonymizační pravidel do interní
         reprezentace vhodné pro validaci.
-        Očekávanou návratovou hodnotou je funkce, která je aplikovatelná na každou hodnotu atributu exclude a include
+        Očekávanou návratovou hodnotou je funkce, která je aplikovatelná na každou hodnotu atributu exclude a include.
+
+        Funkce pro transformaci lze nalezt na konci tridy Validator
 
         :param additional_params: objekt obsahující byteorder, nanoresolution
-        :return: Funkce
+        :return: Funkce, dodatecne parametry (kwargs), rozbalene do vracene funkce
         """
         pass
 
@@ -109,6 +111,7 @@ class Modifier(ABC):
     def __get_include_exclude(self, value) -> ExcludeInclude:
         """
         Transformace exclude a include do interního datového typu
+        NEMĚLA BY BÝT MĚNĚNA
         :param value:
         :return:
         """

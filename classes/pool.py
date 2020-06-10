@@ -1,10 +1,14 @@
 
 class SharedPool:
 
-    def __init__(self, field, transform_method):
+    def __init__(self, field, class_name):
         self.pool = {}
-        self.used_by = [field]
-        self.transform_method = transform_method
+        self.used_by = field
+        self.transform_method = None
+        self.class_name = class_name
+
+    def set_transform_method(self, method):
+        self.transform_method = method
 
     def get_value(self, key):
         return self.pool.get(key)
@@ -33,4 +37,5 @@ class SharedPool:
         result = key.split(delimiter)
         if len(result) == 1:
             return '', result[0]
+        result[0] += '|'
         return result

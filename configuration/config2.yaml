@@ -3,21 +3,20 @@ reset_pools: true
 generate_meta_files: true
 search_all_protocols: false
 rules:
-#  -
-#      field: http.host
-#      modifier: HttpTextRandom
-#      exclude:
-#        value: ['Host: www.foo.com']
-#        validation: 'prefix'
-#      include: []
-#      additional:
-#          foo: 'bar'
-#  -
-#      field: eth.dst
-#      modifier: MACRandomPreserveFlags
-#      include: []
-#      exclude: []
-#      value_group: 'ETH'
+  -
+      field: http.host
+      modifier: HttpTextRandom
+      exclude:
+        value: ['Host:']
+        validation: 'prefix'
+      include: []
+
+  -
+      field: eth.dst
+      modifier: MACRandomPreserveFlags
+      include: []
+      exclude: []
+      value_group: 'ETH'
   -
       field: tls.record.content_type
       modifier: NumberMarker

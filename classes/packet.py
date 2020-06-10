@@ -120,7 +120,6 @@ class Packet:
     def __get_udp_stream(self, packet):
         if self.is_udp:
             if 'udp.stream' in packet['udp']:
-                print( packet['udp']['udp.stream'])
                 return packet['udp']['udp.stream']
             return None
         return None

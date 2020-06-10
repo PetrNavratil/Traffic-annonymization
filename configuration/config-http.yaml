@@ -1,17 +1,17 @@
 tcp_stream: 'clever'
 reset_pools: true
-generate_meta_files: false
+generate_meta_files: true
 search_all_protocols: false
 rules:
-#  -
-#      field: http.host
-#      modifier: HttpTextRandom
-#      exclude:
-#        value: ['Host: www.foo.com']
-#        validation: 'prefix'
-#      include: []
-#      additional:
-#          foo: 'bar'
+  -
+      field: http.host
+      modifier: HttpTextRandom
+      exclude:
+        value: ['Host: ']
+        validation: 'prefix'
+      include: []
+      additional:
+          foo: 'bar'
   -
       field: eth.dst
       modifier: MACRandomPreserveFlags
@@ -25,20 +25,20 @@ rules:
       include: []
       exclude: []
       value_group: 'ETH'
-#
-#  -
-#      field: arp.src.hw_mac
-#      modifier: MACRandomPreserveFlags
-#      value_group: 'ETH'
-#
-#  -
-#      field: arp.dst.hw_mac
-#      modifier: MACRandomPreserveFlags
-#      value_group: 'ETH'
+
+  -
+      field: arp.src.hw_mac
+      modifier: MACRandomPreserveFlags
+      value_group: 'ETH'
+
+  -
+      field: arp.dst.hw_mac
+      modifier: MACRandomPreserveFlags
+      value_group: 'ETH'
 
   -
       field: ip.dst
-      modifier: IPRandomPreserveNPrefix
+      modifier: IPPrefixPreservation
       value: 24
       include: []
       exclude: []
@@ -46,39 +46,39 @@ rules:
 
   -
       field: ip.src
-      modifier: IPRandomPreserveNPrefix
+      modifier: IPPrefixPreservation
       value: 24
       include: []
       exclude: []
       value_group: 'IP'
 
-#  -
-#      field: arp.src.proto_ipv4
-#      modifier: IPPrefixPreservation
-#      include: []
-#      exclude: []
-#      value_group: 'IP'
-#
-#  -
-#      field: arp.dst.proto_ipv4
-#      modifier: IPPrefixPreservation
-#      include: []
-#      exclude: []
-#      value_group: 'IP'
-#
-#  -
-#      field: udp.srcport
-#      modifier: NumberRandom
-#      value_group: 'src_port'
-#      include: []
-#      exclude: []
-#  -
-#      field: udp.dstport
-#      modifier: NumberRandom
-#      value_group: 'src_port'
-#      include: []
-#      exclude: []
-#
+  -
+      field: arp.src.proto_ipv4
+      modifier: IPPrefixPreservation
+      include: []
+      exclude: []
+      value_group: 'IP'
+
+  -
+      field: arp.dst.proto_ipv4
+      modifier: IPPrefixPreservation
+      include: []
+      exclude: []
+      value_group: 'IP'
+
+  -
+      field: udp.srcport
+      modifier: NumberRandom
+      value_group: 'src_port'
+      include: []
+      exclude: []
+  -
+      field: udp.dstport
+      modifier: NumberRandom
+      value_group: 'src_port'
+      include: []
+      exclude: []
+
   -
       field: tcp.srcport
       modifier: NumberRandom

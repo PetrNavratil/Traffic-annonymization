@@ -120,7 +120,6 @@ class Modifier(ABC):
         :return:
         """
         if type(value) is dict:
-            print(value)
             return ExcludeInclude(value['value'], value['validation'])
         if type(value) is list:
             return ExcludeInclude(value, None)

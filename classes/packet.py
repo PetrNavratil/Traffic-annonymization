@@ -187,7 +187,7 @@ class Packet:
                     fields[0].length = last_protocol_field.position - self.tcp_segment_fields[0].position
                     return fields
                 else:
-                    # objekt obsahuje pouze slouceny protokol, tudiz, musel byt pouzity cely segmnent, jinak by se to chytlo uz nahore
+                    # objekt obsahuje pouze slouceny protokol, tudiz, musel byt pouzity cely segmnent
                     # tshark does whatever tshark wants
                     return []
         return []

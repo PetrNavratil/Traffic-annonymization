@@ -71,7 +71,6 @@ class ModifierController:
                 self.position += shark_packet.packet_length + TsharkAdapter.PCAP_PACKET_HEADER
                 self.run_packet_modifiers(shark_packet, self.packets[j+1], {**file_info, 'packet_index': shark_packet.index})
                 if shark_packet.tcp_retransmission:
-                    # print('retransmission')
                     duplicate_packet_index = self.find_retransmission_packet(shark_packet.tcp_stream, shark_packet.index, shark_packet.tcp_seq, shark_packet.tcp_next_seq)
                     self.packets[j+1].packet_origin = duplicate_packet_index
                     self.packets[j+1].remove_all_modifications_after_tcp()
@@ -82,12 +81,11 @@ class ModifierController:
                     for packet_index in shark_packet.tcp_segment_indexes:
                         segment_info = shark_packet.tcp_segment_locations[packet_index]
                         self.packets[packet_index].validate_segments(segment_info.length)
-            print("END OF MODIFYING PHASE")
-            print("VALIDATING TCP STREAMS")
+            print("End of modification")
+            print("Validating TCP stream")
             self.validate_tcp_streams()
-            print("COPYING FILE")
+            print("Copying files")
             self.adapter.copy_file()
-            print("FILE COPIED")
             self.adapter.open_output_file()
             print("Writing changes")
             for key in sorted(self.packets):
@@ -117,7 +115,6 @@ class ModifierController:
         invalid_streams_packets = [packet['index'] for item in self.streams.items() if item[1]['valid'] is False for packet in item[1]['packets']] \
             if self.tcp_stream_strategy == TcpStream.CLEAR.value else \
             []
-        print(invalid_streams_packets, self.tcp_stream_strategy)
 
         for packet in self.packets.values():
             if packet.packet_origin is not None:
@@ -202,15 +199,12 @@ class ModifierController:
         pool_key = rule['value_group'] if value_group else field
         class_name = rule['modifier']
         if pool_key in self.pools:
-            print('already used')
             if value_group:
-                print('value group')
                 assert class_name == self.pools[pool_key].class_name, f"Modifier name must match for shared `value_group`, {pool_key}"
                 return self.pools[pool_key], False
             else:
                 new_key = f'{pool_key}_{order}'
                 self.pools[new_key] = SharedPool(new_key, class_name)
-                print('already used field')
                 return self.pools[new_key], True
         else:
             self.pools[pool_key] = SharedPool(pool_key, class_name)

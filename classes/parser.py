@@ -12,7 +12,7 @@ class Parser:
 
     def __init__(self):
         parser = argparse.ArgumentParser()
-        parser.add_argument('--config', required=True)
+        parser.add_argument('--config', required=True, help='Cesta k souboru s anonymizacni politikou')
         parser.add_argument('--files', nargs='+', help='Files for the anonymization', required=True)
         arguments = vars(parser.parse_args())
         self.config = Parser.__load_config_file(arguments['config'])
